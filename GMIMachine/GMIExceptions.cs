@@ -17,4 +17,10 @@ namespace GMIMachine
     {
         public CodeSyntaxException() : base() { }
     }
+
+    // Ошибка подключения к серверу
+    internal class ConnectProcessException : Exception
+    {
+        public ConnectProcessException() : base() { }
+    }
 }

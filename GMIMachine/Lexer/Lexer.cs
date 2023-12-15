@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -10,7 +11,7 @@ namespace GMIMachine.Lexer
 {
     internal class Lexer
     {
-        internal static async Task LexarySearch(string[] lines)
+        internal static async Task LexarySearch(string[] lines, int port)
         {
             foreach (var line in lines)
             {
@@ -41,8 +42,8 @@ namespace GMIMachine.Lexer
                         DataPool.variables.Add(variableName, variableValue);
                         break;
 
-                    case string when line.Contains("COUT >>"):
-                        string rightOfCOut = line.Split("COUT >>")[1];
+                    case string when line.Contains("COUT VAR >>"):
+                        string rightOfCOut = line.Split("COUT VAR >>")[1];
                         int spaceSymbolCountCOut = 0;
                         for (int i = 0; i < rightOfCOut.Length; i++)
                         {
@@ -57,6 +58,7 @@ namespace GMIMachine.Lexer
                         if (rightOfCOut.ToCharArray()[0] == ' ')
                             throw new CodeSyntaxException();
                         string variableNameCOut = rightOfCOut;
+                        await ServerProvider.SendPacket($"COUT >> {variableNameCOut}:{DataPool.variables[variableNameCOut]}", port);
                         break;
                 }
             }

@@ -10,20 +10,34 @@ namespace GMICLI
 {
     internal class Server
     {
-        internal static async Task Start()
+        internal static void Start()
         {
-            TcpListener tcpServer = new TcpListener(IPAddress.Any, 0);
+            TcpListener tcpServer = new TcpListener(IPAddress.Parse("127.0.0.1"), 0);
             tcpServer.Start();
-            await Receive(tcpServer);
-
+            Global.Buffers.tcpServerPort = ((IPEndPoint)tcpServer.LocalEndpoint).Port;
+            Thread receiveThread = new Thread(() => Receive(tcpServer));
+            receiveThread.Start();
         }
 
-        internal static async Task Receive(TcpListener tcp)
+        internal static void Receive(TcpListener tcp)
         {
             while (true)
             {
-                using var tcpClient = await tcp.AcceptTcpClientAsync();
-                Console.WriteLine($"Входящее подключение: {tcpClient.Client.RemoteEndPoint}");
+                using var tcpClient = tcp.AcceptTcpClient();
+                //Console.WriteLine($"Входящее подключение: {tcpClient.Client.RemoteEndPoint}");
+
+                if (tcpClient.Client.ReceiveBufferSize > 0)
+                {
+                    byte[] testMessageBuffer = new byte[512];
+                    int bytesReceivedCount = tcpClient.Client.Receive(testMessageBuffer);
+                    if (bytesReceivedCount > 0)
+                    {
+                        //Console.WriteLine($"Получены данные от клиента: {Encoding.UTF8.GetString(testMessageBuffer)}");
+                        string message = Encoding.UTF8.GetString(testMessageBuffer);
+                        Thread receivedDataHandler = new Thread(() => Interpreter.OutputHandler.ReceivedDataHandler(message));
+                        receivedDataHandler.Start();
+                    }
+                }
             }
         }
     }
