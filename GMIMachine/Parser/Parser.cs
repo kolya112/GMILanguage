@@ -1,10 +1,12 @@
-﻿using System;
+﻿using GMIMachine.Lexer;
+using System;
+using System.Text;
 
 namespace GMIMachine.Parser
 {
     internal class Parser
     {
-        internal static async Task Parse(string method, string line, int port)
+        internal static async Task Parse(string method, string line, int port, int lineCount = -1, string executeFilePath = "")
         {
             switch (method)
             {
@@ -163,6 +165,49 @@ namespace GMIMachine.Parser
                     }
                     else
                         throw new CoordNotInRangeException();
+
+                    break;
+
+                case "PROCEDURE":
+                    string procName = line;
+                    int endProcLineNumber = -1;
+                    //DataPool.procedureIsStarted = true;
+                    string[] executableFileLines = await File.ReadAllLinesAsync(executeFilePath, Encoding.UTF8);
+                    List<string> executableFileLinesInList = executableFileLines.ToList();
+                    executableFileLinesInList.RemoveRange(0, lineCount);
+
+                    int lineCounter = 0;
+                    foreach (var executableFileLine in executableFileLines)
+                    {
+                        lineCounter++;
+                        if (executableFileLine.Contains("ENDPROC"))
+                        {
+                            endProcLineNumber = lineCounter;
+                            break;
+                        }
+                    }
+
+                    if (endProcLineNumber == -1)
+                        throw new EndProcNotFoundException();
+
+                    DataPool.procedures.Add(procName, new List<int> { lineCount, endProcLineNumber });
+
+                    break;
+
+                case "CALL":
+                    string calledProcName = line;
+
+                    if (DataPool.procedures.ContainsKey(calledProcName))
+                    {
+                        DataPool.startedProcedures.Add(calledProcName);
+                        DataPool.procedureIsStarted = true;
+                        string[] executableFileLinesCall = await File.ReadAllLinesAsync(executeFilePath, Encoding.UTF8);
+                        await Lexer.Lexer.LexarySearch(executableFileLinesCall, port, executeFilePath);
+                        DataPool.startedProcedures.Remove(calledProcName);
+                        DataPool.procedureIsStarted = false;
+                    }
+                    else
+                        throw new ProcedureNotFoundException();
 
                     break;
             }

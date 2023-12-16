@@ -41,4 +41,16 @@ namespace GMIMachine
     {
         public CoordNotInRangeException() : base() { }
     }
+
+    // Выражение ENDPROC не найдено
+    internal class EndProcNotFoundException : Exception
+    {
+        public EndProcNotFoundException() : base() { }
+    }
+
+    // Процедура не найдена
+    internal class ProcedureNotFoundException : Exception
+    {
+        public ProcedureNotFoundException() : base() { }
+    }
 }

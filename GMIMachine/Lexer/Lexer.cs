@@ -1,21 +1,57 @@
-﻿using GMIMachine.Parser;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Sockets;
-using System.Reflection;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+﻿using System;
 
 namespace GMIMachine.Lexer
 {
     internal class Lexer
     {
-        internal static async Task LexarySearch(string[] lines, int port)
+        internal static async Task LexarySearch(string[] lines, int port, string executableFilePath)
         {
+            int lineCount = 0;
             foreach (var line in lines)
             {
+                lineCount++;
+
+                if (DataPool.procedures.Count > 0)
+                {
+                    bool alert = false;
+                    foreach (var procedure in DataPool.procedures)
+                    {
+                        if (lineCount < procedure.Value[1] && lineCount > procedure.Value[0])
+                        {
+                            if (!DataPool.procedureIsStarted)
+                            {
+                                alert = true;
+                                break;
+                            }
+                            else
+                            {
+                                if (DataPool.startedProcedures.Contains(procedure.Key))
+                                    if (DataPool.startedProcedures.IndexOf(procedure.Key) != 0)
+                                    {
+                                        alert = true;
+                                        break;
+                                    }
+                            }
+                        }
+                        else
+                        {
+                            if (DataPool.procedureIsStarted)
+                                if (DataPool.startedProcedures.Contains(procedure.Key))
+                                {
+                                    alert = true;
+                                    break;
+                                }
+                        }
+                    }
+
+                    if (alert)
+                        continue;
+
+                    if (DataPool.procedureIsStarted)
+                        if (line == "ENDPROC")
+                            break;
+                }
+
                 switch (line)
                 {
                     case string when line.Contains("SET"):
@@ -71,6 +107,27 @@ namespace GMIMachine.Lexer
                             throw new CodeSyntaxException();
 
                         await Parser.Parser.Parse("DOWN", rightOfDown, port);
+
+                        break;
+
+                    case string when line.Contains("PROCEDURE"):
+                        if (DataPool.procedureIsStarted)
+                            throw new CodeSyntaxException();
+
+                        string rightOfExpProc = line.Split("PROCEDURE ")[1];
+                        if (GetSpaceSymbolsCount(rightOfExpProc) > 0)
+                            throw new CodeSyntaxException();
+
+                        await Parser.Parser.Parse("PROCEDURE", rightOfExpProc, port, lineCount, executableFilePath);
+
+                        break;
+
+                    case string when line.Contains("CALL"):
+                        string rightOfCall = line.Split("CALL ")[1];
+                        if (GetSpaceSymbolsCount(rightOfCall) > 0)
+                            throw new CodeSyntaxException();
+
+                        await Parser.Parser.Parse("CALL", rightOfCall, port, lineCount, executableFilePath);
 
                         break;
 

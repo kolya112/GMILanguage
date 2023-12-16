@@ -20,7 +20,7 @@ namespace GMIMachine
             {
                 string[] sourceLines = await File.ReadAllLinesAsync(_executeFilePath);
 
-                await Lexer.Lexer.LexarySearch(sourceLines, _tcpServerPort);
+                await Lexer.Lexer.LexarySearch(sourceLines, _tcpServerPort, _executeFilePath);
             }
             else
                 throw new ExecutableFileNotFoundException();
