@@ -33,7 +33,7 @@ namespace GMICLI
                     if (bytesReceivedCount > 0)
                     {
                         //Console.WriteLine($"Получены данные от клиента: {Encoding.UTF8.GetString(testMessageBuffer)}");
-                        string message = Encoding.UTF8.GetString(testMessageBuffer);
+                        string message = Encoding.UTF8.GetString(testMessageBuffer, 0, bytesReceivedCount);
                         Thread receivedDataHandler = new Thread(() => Interpreter.OutputHandler.ReceivedDataHandler(message));
                         receivedDataHandler.Start();
                     }

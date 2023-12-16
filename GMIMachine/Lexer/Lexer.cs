@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GMIMachine.Parser;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
@@ -18,50 +19,76 @@ namespace GMIMachine.Lexer
                 switch (line)
                 {
                     case string when line.Contains("SET"):
-                        string rightOfExp = line.Split("SET")[1];
-                        int spaceSymbolCount = 0;
-                        for (int i = 0; i < rightOfExp.Length; i++)
-                        {
-                            if (rightOfExp.ToCharArray()[i] == ' ')
-                                spaceSymbolCount++;
-                        }
-                        if (spaceSymbolCount > 3)
+                        string rightOfExpSET = line.Split("SET ")[1];
+                        if (GetSpaceSymbolsCount(rightOfExpSET) > 2)
                             throw new CodeSyntaxException();
-                        if (rightOfExp.ToCharArray()[0] != ' ')
-                            throw new CodeSyntaxException();
-                        rightOfExp = rightOfExp.Remove(0, 1);
-                        if (rightOfExp.ToCharArray()[0] == ' ')
+                        if (rightOfExpSET.ToCharArray()[0] == ' ')
                             throw new CodeSyntaxException();
 
-                        string[] spaceInExp = rightOfExp.Split(' ');
-                        string variableName = spaceInExp[0];
-                        if (spaceInExp[1] != "=")
-                            throw new CodeSyntaxException();
-                        string variableValue = spaceInExp[2];
+                        await Parser.Parser.Parse("SET", rightOfExpSET, port);
 
-                        DataPool.variables.Add(variableName, variableValue);
                         break;
 
                     case string when line.Contains("COUT VAR >>"):
-                        string rightOfCOut = line.Split("COUT VAR >>")[1];
-                        int spaceSymbolCountCOut = 0;
-                        for (int i = 0; i < rightOfCOut.Length; i++)
-                        {
-                            if (rightOfCOut.ToCharArray()[i] == ' ')
-                                spaceSymbolCountCOut++;
-                        }
-                        if (spaceSymbolCountCOut > 1)
+                        string rightOfCOut = line.Split("COUT VAR >> ")[1];
+                        if (GetSpaceSymbolsCount(rightOfCOut) > 0)
                             throw new CodeSyntaxException();
-                        if (rightOfCOut.ToCharArray()[0] != ' ')
+
+                        await Parser.Parser.Parse("COUT_VAR", rightOfCOut, port);
+
+                        break;
+
+                    case string when line.Contains("RIGHT"):
+                        string rightOfRight = line.Split("RIGHT ")[1];
+                        if (GetSpaceSymbolsCount(rightOfRight) > 0)
                             throw new CodeSyntaxException();
-                        rightOfCOut = rightOfCOut.Remove(0, 1);
-                        if (rightOfCOut.ToCharArray()[0] == ' ')
+
+                        await Parser.Parser.Parse("RIGHT", rightOfRight, port);
+
+                        break;
+
+                    case string when line.Contains("LEFT"):
+                        string rightOfLeft = line.Split("LEFT ")[1];
+                        if (GetSpaceSymbolsCount(rightOfLeft) > 0)
                             throw new CodeSyntaxException();
-                        string variableNameCOut = rightOfCOut;
-                        await ServerProvider.SendPacket($"COUT >> {variableNameCOut}:{DataPool.variables[variableNameCOut]}", port);
+
+                        await Parser.Parser.Parse("LEFT", rightOfLeft, port);
+
+                        break;
+
+                    case string when line.Contains("UP"):
+                        string rightOfUp = line.Split("UP ")[1];
+                        if (GetSpaceSymbolsCount(rightOfUp) > 0)
+                            throw new CodeSyntaxException();
+
+                        await Parser.Parser.Parse("UP", rightOfUp, port);
+
+                        break;
+
+                    case string when line.Contains("DOWN"):
+                        string rightOfDown = line.Split("DOWN ")[1];
+                        if (GetSpaceSymbolsCount(rightOfDown) > 0)
+                            throw new CodeSyntaxException();
+
+                        await Parser.Parser.Parse("DOWN", rightOfDown, port);
+
+                        break;
+
+                    default:
                         break;
                 }
             }
+        }
+
+        internal static int GetSpaceSymbolsCount(string line)
+        {
+            int spaceSymbolsCount = 0;
+            for (int i = 0; i < line.Length; i++)
+            {
+                if (line.ToCharArray()[i] == ' ')
+                    spaceSymbolsCount++;
+            }
+            return spaceSymbolsCount;
         }
     }
 }

@@ -23,4 +23,22 @@ namespace GMIMachine
     {
         public ConnectProcessException() : base() { }
     }
+
+    // Указанная переменная не найдена
+    internal class VariableNotFoundException : Exception
+    {
+        public VariableNotFoundException() : base() { }
+    }
+
+    // Указанная переменная не является числовой
+    internal class VariableNotIntegerException : Exception
+    {
+        public VariableNotIntegerException() : base() { }
+    }
+
+    // Указанная координата не в ОДЗ
+    internal class CoordNotInRangeException : Exception
+    {
+        public CoordNotInRangeException() : base() { }
+    }
 }
