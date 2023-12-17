@@ -201,10 +201,14 @@ namespace GMIMachine.Parser
                     {
                         DataPool.startedProcedures.Add(calledProcName);
                         DataPool.procedureIsStarted = true;
+                        DataPool.CodeLevel += 1;
+                        if (DataPool.CodeLevel > 3)
+                            throw new CodeLevelException();
                         string[] executableFileLinesCall = await File.ReadAllLinesAsync(executeFilePath, Encoding.UTF8);
                         await Lexer.Lexer.LexarySearch(executableFileLinesCall, port, executeFilePath);
                         DataPool.startedProcedures.Remove(calledProcName);
                         DataPool.procedureIsStarted = false;
+                        DataPool.CodeLevel -= 1;
                     }
                     else
                         throw new ProcedureNotFoundException();

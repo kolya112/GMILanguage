@@ -53,4 +53,10 @@ namespace GMIMachine
     {
         public ProcedureNotFoundException() : base() { }
     }
+
+    // Превышена максимальная вложенность конструкций
+    internal class CodeLevelException : Exception
+    {
+        public CodeLevelException() : base() { }
+    }
 }
