@@ -181,6 +181,9 @@ namespace GMIMachine.Parser
                     else if (!IsText(procName))
                         throw new CodeSyntaxException();
 
+                    if (DataPool.procedures.ContainsKey(procName))
+                        throw new CodeSyntaxException();
+
                     int endProcLineNumber = -1;
                     string[] executableFileLines = await File.ReadAllLinesAsync(executeFilePath, Encoding.UTF8);
                     List<string> executableFileLinesInList = executableFileLines.ToList();
