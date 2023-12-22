@@ -52,6 +52,10 @@ namespace GMIMachine.Lexer
                             break;
                 }
 
+                // Проверка на пустую строку
+                if (string.IsNullOrWhiteSpace(line))
+                    continue;
+
                 switch (line)
                 {
                     case string when line.Contains("SET"):
