@@ -20,7 +20,14 @@ namespace GMIMachine.Parser
                         throw new CodeSyntaxException();
                     else if (!IsText(variableNameSET))
                         throw new CodeSyntaxException();
+
                     string variableValueSET = spaceInExpSET[2];
+
+                    if (!int.TryParse(variableValueSET, out int variableValueInDigitSET))
+                        if (DataPool.variables.ContainsKey(variableValueSET))
+                            variableValueSET = DataPool.variables[variableValueSET];
+                        else
+                            throw new ValueNotDefinedException();
 
                     DataPool.variables.Add(variableNameSET, variableValueSET);
                     break;

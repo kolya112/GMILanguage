@@ -65,4 +65,10 @@ namespace GMIMachine
     {
         public ProcedureIsStartedException() : base() { }
     }
+
+    // Значение переменной является ни числовым, ни названием другой переменной
+    internal class ValueNotDefinedException : Exception
+    {
+        public ValueNotDefinedException() : base() { }
+    }
 }
