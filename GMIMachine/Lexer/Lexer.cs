@@ -112,7 +112,7 @@ namespace GMIMachine.Lexer
 
                     case string when line.Contains("PROCEDURE"):
                         if (DataPool.procedureIsStarted)
-                            throw new CodeSyntaxException();
+                            throw new ProcedureIsStartedException();
 
                         string rightOfExpProc = line.Split("PROCEDURE ")[1];
                         if (GetSpaceSymbolsCount(rightOfExpProc) > 0)

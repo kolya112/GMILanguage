@@ -15,6 +15,11 @@ namespace GMIMachine.Parser
                     string variableNameSET = spaceInExpSET[0];
                     if (spaceInExpSET[1] != "=")
                         throw new CodeSyntaxException();
+
+                    if (Common.Constants.Literals.Contains(variableNameSET))
+                        throw new CodeSyntaxException();
+                    else if (!IsText(variableNameSET))
+                        throw new CodeSyntaxException();
                     string variableValueSET = spaceInExpSET[2];
 
                     DataPool.variables.Add(variableNameSET, variableValueSET);
@@ -170,8 +175,13 @@ namespace GMIMachine.Parser
 
                 case "PROCEDURE":
                     string procName = line;
+
+                    if (Common.Constants.Literals.Contains(procName))
+                        throw new CodeSyntaxException();
+                    else if (!IsText(procName))
+                        throw new CodeSyntaxException();
+
                     int endProcLineNumber = -1;
-                    //DataPool.procedureIsStarted = true;
                     string[] executableFileLines = await File.ReadAllLinesAsync(executeFilePath, Encoding.UTF8);
                     List<string> executableFileLinesInList = executableFileLines.ToList();
                     executableFileLinesInList.RemoveRange(0, lineCount);
@@ -215,6 +225,19 @@ namespace GMIMachine.Parser
 
                     break;
             }
+        }
+
+        /// <summary>
+        /// Проверяется, содержится ли в указанном тексте цифры, либо какие-либо другие символы, отличные от обычных букв
+        /// </summary>
+        /// <param name="text">Текст</param>
+        /// <returns></returns>
+        internal static bool IsText(string text)
+        {
+            foreach (char c in text)
+                if (!Char.IsLetter(c))
+                    return false;
+            return true;
         }
     }
 }

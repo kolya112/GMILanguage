@@ -59,4 +59,10 @@ namespace GMIMachine
     {
         public CodeLevelException() : base() { }
     }
+
+    // Инициализация новой процедуры в блоке другой процедуры
+    internal class ProcedureIsStartedException : Exception
+    {
+        public ProcedureIsStartedException() : base() { }
+    }
 }
