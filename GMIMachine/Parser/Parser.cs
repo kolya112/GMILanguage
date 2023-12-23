@@ -29,7 +29,12 @@ namespace GMIMachine.Parser
                         else
                             throw new ValueNotDefinedException();
 
-                    DataPool.variables.Add(variableNameSET, variableValueSET);
+                    // Если переменная с таким названием уже существует - заменяем её значение на новое
+                    if (DataPool.variables.ContainsKey(variableNameSET))
+                        DataPool.variables[variableNameSET] = variableValueSET;
+                    else
+                        DataPool.variables.Add(variableNameSET, variableValueSET);
+
                     break;
 
                 case "COUT_VAR":
