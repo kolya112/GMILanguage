@@ -71,4 +71,10 @@ namespace GMIMachine
     {
         public ValueNotDefinedException() : base() { }
     }
+
+    // Выражение ENDIF не найдено
+    internal class EndIfNotFoundException : Exception
+    {
+        public EndIfNotFoundException() : base() { }
+    }
 }

@@ -4,12 +4,28 @@ namespace GMIMachine.Lexer
 {
     internal class Lexer
     {
-        internal static async Task LexarySearch(string[] lines, int port, string executableFilePath)
+        internal static async Task LexarySearch(string[] lines, int port, string executableFilePath, int startLineIndex = -1, int endLineIndex = -1, string internalMethod = "")
         {
             int lineCount = 0;
             foreach (var line in lines)
             {
                 lineCount++;
+
+                if (startLineIndex != -1 && endLineIndex != -1)
+                {
+                    if (lineCount < startLineIndex)
+                        continue;
+
+                    if (lineCount > endLineIndex)
+                        break;
+                }
+
+                if (DataPool.linesRangeBlackList.Count > 0)
+                    if (DataPool.linesRangeBlackList.Contains(lineCount))
+                    {
+                        DataPool.linesRangeBlackList.Remove(lineCount);
+                        continue;
+                    }
 
                 if (DataPool.procedures.Count > 0)
                 {
@@ -78,6 +94,16 @@ namespace GMIMachine.Lexer
 
                         break;
 
+                    case string when line.Contains("IFBLOCK"):
+                        string rightOfIfBlock = line.Split("IFBLOCK ")[1];
+                        string leftOfIfBlock = line.Split("IFBLOCK ")[0];
+                        if (GetSpaceSymbolsCount(rightOfIfBlock) > 0)
+                            throw new CodeSyntaxException();
+
+                        await Parser.Parser.Parse("IFBLOCK", rightOfIfBlock, port, lineCount, executableFilePath, leftOfIfBlock);
+
+                        break;
+
                     case string when line.Contains("RIGHT"):
                         string rightOfRight = line.Split("RIGHT ")[1];
                         if (GetSpaceSymbolsCount(rightOfRight) > 0)
@@ -135,8 +161,11 @@ namespace GMIMachine.Lexer
 
                         break;
 
-                    default:
+                    case string when line.Contains("ENDPROC"):
                         break;
+
+                    default:
+                        throw new CodeSyntaxException();
                 }
             }
         }

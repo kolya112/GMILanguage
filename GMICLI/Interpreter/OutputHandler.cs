@@ -22,6 +22,10 @@ namespace GMICLI.Interpreter
                     string yChangeContent = data.Split("Y >> ")[1];
                     Console.WriteLine(yChangeContent);
                     break;
+
+                default:
+                    Console.WriteLine(data);
+                    break;
             }
         }
     }

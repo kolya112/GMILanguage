@@ -1,12 +1,10 @@
-﻿using GMIMachine.Lexer;
-using System;
-using System.Text;
+﻿using System.Text;
 
 namespace GMIMachine.Parser
 {
     internal class Parser
     {
-        internal static async Task Parse(string method, string line, int port, int lineCount = -1, string executeFilePath = "")
+        internal static async Task Parse(string method, string line, int port, int lineCount = -1, string executeFilePath = "", string leftLineOfExp = "")
         {
             switch (method)
             {
@@ -64,10 +62,10 @@ namespace GMIMachine.Parser
                     }
 
                     // Проверка ОДЗ
-                    if (!(coordRight < 1) || !(coordRight > 21))
+                    if (coordRight >= 1 && coordRight <= 20)
                     {
                         // Проверяем, не выйдет ли исполнитель за рамки сетки
-                        if (!((DataPool.coords.X + coordRight) > 21))
+                        if ((DataPool.coords.X + coordRight) <= 20)
                         {
                             await ServerProvider.SendPacket($"X >> {DataPool.coords.X + coordRight}", port);
                             DataPool.coords.X += coordRight;
@@ -99,10 +97,10 @@ namespace GMIMachine.Parser
                     }
 
                     // Проверка ОДЗ
-                    if (!(coordLeft < 1) || !(coordLeft > 21))
+                    if (coordLeft >= 1 && coordLeft <= 20)
                     {
                         // Проверяем, не выйдет ли исполнитель за рамки сетки
-                        if (!((DataPool.coords.X - coordLeft) < 0))
+                        if ((DataPool.coords.X - coordLeft) >= 0)
                         {
                             await ServerProvider.SendPacket($"X >> {DataPool.coords.X - coordLeft}", port);
                             DataPool.coords.X -= coordLeft;
@@ -134,10 +132,10 @@ namespace GMIMachine.Parser
                     }
 
                     // Проверка ОДЗ
-                    if (!(coordUp < 1) || !(coordUp > 21))
+                    if (coordUp >= 1 && coordUp <= 20)
                     {
                         // Проверяем, не выйдет ли исполнитель за рамки сетки
-                        if (!((DataPool.coords.Y + coordUp) > 21))
+                        if ((DataPool.coords.Y + coordUp) <= 20)
                         {
                             await ServerProvider.SendPacket($"Y >> {DataPool.coords.Y + coordUp}", port);
                             DataPool.coords.Y += coordUp;
@@ -169,10 +167,10 @@ namespace GMIMachine.Parser
                     }
 
                     // Проверка ОДЗ
-                    if (!(coordDown < 1) || !(coordDown > 21))
+                    if (coordDown >= 1 && coordDown <= 20)
                     {
                         // Проверяем, не выйдет ли исполнитель за рамки сетки
-                        if (!((DataPool.coords.Y - coordDown) < 0))
+                        if ((DataPool.coords.Y - coordDown) >= 0)
                         {
                             await ServerProvider.SendPacket($"Y >> {DataPool.coords.Y - coordDown}", port);
                             DataPool.coords.Y -= coordDown;
@@ -202,12 +200,12 @@ namespace GMIMachine.Parser
                     executableFileLinesInList.RemoveRange(0, lineCount);
 
                     int lineCounter = 0;
-                    foreach (var executableFileLine in executableFileLines)
+                    foreach (var executableFileLine in executableFileLinesInList)
                     {
                         lineCounter++;
                         if (executableFileLine.Contains("ENDPROC"))
                         {
-                            endProcLineNumber = lineCounter;
+                            endProcLineNumber = lineCounter + lineCount;
                             break;
                         }
                     }
@@ -239,6 +237,100 @@ namespace GMIMachine.Parser
                     }
                     else
                         throw new ProcedureNotFoundException();
+
+                    break;
+
+                case "IFBLOCK":
+                    if (line != Common.Constants.Literals[1] &&
+                        line != Common.Constants.Literals[2] &&
+                        line != Common.Constants.Literals[3] &&
+                        line != Common.Constants.Literals[4])
+                            throw new CodeSyntaxException();
+
+                    //int spaceSymbolsInExp = Lexer.Lexer.GetSpaceSymbolsCount(leftLineOfExp); // Получаем количество пустых символов
+                    int spaceSymbolsInExp = leftLineOfExp.Length; // Получаем количество пустых символов
+
+                    //await ServerProvider.SendPacket("leftLineOfExp: '" + leftLineOfExp.ToCharArray().Length + "'", port);
+
+                    // Ищем выражение ENDIF
+                    int endIfBlockLineNumber = -1;
+                    string[] executableFileLinesForIfBlock = await File.ReadAllLinesAsync(executeFilePath, Encoding.UTF8);
+                    List<string> executableFileLinesInListForIfBlock = executableFileLinesForIfBlock.ToList();
+                    executableFileLinesInListForIfBlock.RemoveRange(0, lineCount);
+
+                    int lineCounterIfBlock = 0;
+
+                    foreach (var executableFileLine in executableFileLinesInListForIfBlock)
+                    {
+                        lineCounterIfBlock++;
+                        if (executableFileLine.Contains("ENDIF"))
+                        {
+                            //int spaceSymbolsInCurrentLine = Lexer.Lexer.GetSpaceSymbolsCount(executableFileLine.Split("ENDIF")[0]);
+                            int spaceSymbolsInCurrentLine = executableFileLine.Split("ENDIF")[0].Length;
+
+                            if (spaceSymbolsInExp == spaceSymbolsInCurrentLine)
+                                endIfBlockLineNumber = lineCounterIfBlock + lineCount;
+                            else
+                                continue;
+
+                            break;
+                        }
+                    }
+
+                    if (endIfBlockLineNumber == -1)
+                        throw new EndIfNotFoundException();
+
+                    if (line == Common.Constants.Literals[1])
+                    {
+                        // Если ОДЗ нарушено: клетка занята
+                        if (DataPool.coords.X + 1 > 20)
+                        {
+                            DataPool.CodeLevel += 1;
+                            if (DataPool.CodeLevel > 3)
+                                throw new CodeLevelException();
+                            await Lexer.Lexer.LexarySearch(executableFileLinesForIfBlock, port, executeFilePath, lineCount + 1, endIfBlockLineNumber - 1, "IFBLOCK");
+                            DataPool.CodeLevel -= 1;
+                        }
+                    }
+                    else if (line == Common.Constants.Literals[2])
+                    {
+                        // Если ОДЗ нарушено: клетка занята
+                        if (DataPool.coords.X - 1 < 0)
+                        {
+                            DataPool.CodeLevel += 1;
+                            if (DataPool.CodeLevel > 3)
+                                throw new CodeLevelException();
+                            await Lexer.Lexer.LexarySearch(executableFileLinesForIfBlock, port, executeFilePath, lineCount + 1, endIfBlockLineNumber - 1, "IFBLOCK");
+                            DataPool.CodeLevel -= 1;
+                        }
+                    }
+                    else if (line == Common.Constants.Literals[3])
+                    {
+                        // Если ОДЗ нарушено: клетка занята
+                        if (DataPool.coords.Y + 1 > 20)
+                        {
+                            DataPool.CodeLevel += 1;
+                            if (DataPool.CodeLevel > 3)
+                                throw new CodeLevelException();
+                            await Lexer.Lexer.LexarySearch(executableFileLinesForIfBlock, port, executeFilePath, lineCount + 1, endIfBlockLineNumber - 1, "IFBLOCK");
+                            DataPool.CodeLevel -= 1;
+                        }
+                    }
+                    else if (line == Common.Constants.Literals[4])
+                    {
+                        // Если ОДЗ нарушено: клетка занята
+                        if (DataPool.coords.Y - 1 < 0)
+                        {
+                            DataPool.CodeLevel += 1;
+                            if (DataPool.CodeLevel > 3)
+                                throw new CodeLevelException();
+                            await Lexer.Lexer.LexarySearch(executableFileLinesForIfBlock, port, executeFilePath, lineCount + 1, endIfBlockLineNumber - 1, "IFBLOCK");
+                            DataPool.CodeLevel -= 1;
+                        }
+                    }
+
+                    for (int i = lineCount + 1; i <= endIfBlockLineNumber; i++)
+                        DataPool.linesRangeBlackList.Add(i);
 
                     break;
             }
