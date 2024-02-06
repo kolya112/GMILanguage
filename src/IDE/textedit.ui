@@ -28,7 +28,7 @@
      <number>0</number>
     </property>
     <item>
-     <layout class="QGridLayout" name="gridLayout" rowstretch="7,1">
+     <layout class="QGridLayout" name="gridLayout" rowstretch="7">
       <item row="0" column="0">
        <widget class="QTextEdit" name="textedit">
         <property name="sizePolicy">
@@ -44,16 +44,6 @@
         </property>
         <property name="frameShape">
          <enum>QFrame::NoFrame</enum>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QTextBrowser" name="textBrowser">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
         </property>
        </widget>
       </item>

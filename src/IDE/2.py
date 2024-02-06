@@ -42,31 +42,50 @@ class Window(QMainWindow):
         if self.i >= len(self.pts):
             self.t.stop()
             return
-        if self.x < self.pts[self.i][0]:
-            self.x += 1
-        elif self.x > self.pts[self.i][0]:
-            self.x -= 1
-        elif self.y < self.pts[self.i][1]:
-            self.y += 1
-        elif self.y > self.pts[self.i][1]:
-            self.y -= 1
-        else:
-            self.i += 1
-            if self.i >= len(self.pts):
-                self.t.stop()
+        if self.pts[self.i][0] == 'X':
+            if self.x < self.pts[self.i][1]:
+                self.x += 1
+            elif self.x > self.pts[self.i][1]:
+                self.x -=1
+            else:
+                self.i += 1
+        if self.pts[self.i][0] == 'Y':
+            if self.y < self.pts[self.i][1]:
+                self.y += 1
+            elif self.y > self.pts[self.i][1]:
+                self.y -=1
+            else:
+                self.i += 1
         self.update()
+    def somerror(self):
+        poperr = QMessageBox()
+        poperr.setWindowTitle("exception raised")
+        poperr.setText(self.errs)
+        poperr.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        poperr.exec_()
     def run(self):
-        self.show()
         if not self.pts:
             f = Popen(["python", "1.py"], stdin=PIPE, stdout=PIPE, stderr=PIPE, encoding="utf-8")
             cords, errs = f.communicate(input=r"C:\Users\anton\Desktop\frbk\sp\GMILanguage\src\IDE\файл.txt")
-            cords = [tuple(map(int, x.rstrip().split())) for x in
-                     cords.rstrip().split("\n")]
-            self.pts = cords
+            cords = cords.rstrip()
             self.errs = errs
-        self.t.start(100)
+            if errs:
+                self.somerror()
+                self.pts = cords
+                return
+            self.show()
+            with open(T.file[:-4] + ".log", "a") as log:
+                log.write('_' * 50 + '\n')
+                for c in cords.split('\n'):
+                    log.write(c + '\n')
+                    n = c.split(">>")
+                    self.pts.append([n[0], int(n[1])])
+            self.t.start(100)
     def stop(self):
         self.t.stop()
+    def cont(self):
+        if not self.i >= len(self.pts):
+            self.t.start(100)
 
 class Textui(QMainWindow):
     def __init__(self):
@@ -81,6 +100,7 @@ class Textui(QMainWindow):
         self.actionSave.triggered.connect(self.save)
         self.actionSave_as.triggered.connect(self.saveas)
         self.actionOpen.triggered.connect(self.open)
+        self.actionContinue.triggered.connect(self.cont)
         self.textedit.textChanged.connect(self.change)
         self.show()
     def change(self):
@@ -93,14 +113,13 @@ class Textui(QMainWindow):
             wanna.setText("Ваш код должен быть сохранен перед запуском. \n"
                           "\t\tOk чтобы сохранить")
             wanna.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
-            wanna
             ret = wanna.exec()
             if ret == QMessageBox.Ok:
                 self.save()
     def stop(self):
         w.stop()
     def cont(self):
-        pass
+        w.cont()
     def save(self):
         if self.file:
             with open(self.file, "w") as of:
@@ -122,11 +141,12 @@ class Textui(QMainWindow):
                 with open(self.file, 'r') as f:
                     t = f.read()
                     self.textedit.setText(t)
+                    self.fl = False
             except FileNotFoundError:
                 pop = QMessageBox()
                 pop.setText("Не удалось найти этот файл")
                 pop.setWindowTitle("Ошибка")
-                pop.setStandardButtons(QMessageBox.Ok)
+                pop.setStandardButtons(QMessageBox.Ok |QMessageBox.Cancel)
                 pop.exec_()
     def saveas(self):
         fsd = QFileDialog()
