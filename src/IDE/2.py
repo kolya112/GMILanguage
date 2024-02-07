@@ -65,8 +65,8 @@ class Window(QMainWindow):
         poperr.exec_()
     def run(self):
         if not self.pts:
-            f = Popen(["python", "1.py"], stdin=PIPE, stdout=PIPE, stderr=PIPE, encoding="utf-8")
-            cords, errs = f.communicate(input=r"C:\Users\anton\Desktop\frbk\sp\GMILanguage\src\IDE\файл.txt")
+            f = Popen(["python", "1.py", T.file], stdin=PIPE, stdout=PIPE, stderr=PIPE, encoding="utf-8")
+            cords, errs = f.stdout.read(), f.stderr.read()
             cords = cords.rstrip()
             self.errs = errs
             if errs:
@@ -78,7 +78,7 @@ class Window(QMainWindow):
                 log.write('_' * 50 + '\n')
                 for c in cords.split('\n'):
                     log.write(c + '\n')
-                    n = c.split(">>")
+                    n = c.split(" >> ")
                     self.pts.append([n[0], int(n[1])])
             self.t.start(100)
     def stop(self):
