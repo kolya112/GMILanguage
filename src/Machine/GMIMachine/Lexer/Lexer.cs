@@ -4,9 +4,55 @@ namespace GMIMachine.Lexer
 {
     internal class Lexer
     {
-        internal static async Task LexarySearch(string[] lines, int port, string executableFilePath, int startLineIndex = -1, int endLineIndex = -1, string internalMethod = "")
+        internal static async Task LexarySearch(string[] lines, int port, string executableFilePath, int startLineIndex = -1, int endLineIndex = -1, bool firstStart = false, string fromProcedure = "")
         {
-            int lineCount = 0;
+            int lineCount = 0; // Счётчик текущей строки
+            
+            // Если лексер запускается впервые
+            if (firstStart)
+            {
+                // Поиск процедур в коде
+                foreach (var line in lines)
+                {
+                    lineCount++;
+
+                    if (line.Contains("PROCEDURE "))
+                    {
+                        string procName = line.Split("PROCEDURE ")[1];
+
+                        // Проверки на запрещённые названия процедуры
+                        if (Common.Constants.Literals.Contains(procName))
+                            throw new CodeSyntaxException();
+                        else if (!Common.Utils.IsText(procName))
+                            throw new CodeSyntaxException();
+                        else if (DataPool.procedures.ContainsKey(procName))
+                            throw new CodeSyntaxException();
+
+                        int endProcLineNumber = -1; // Номер строки с ENDPROC
+                        List<string> executableFileLinesInList = lines.ToList();
+                        executableFileLinesInList.RemoveRange(0, lineCount); // Удаляем строки от 0 индекса до строки, на которой находимся сейчас
+
+                        int lineCounter = 0;
+                        foreach (var executableFileLine in executableFileLinesInList)
+                        {
+                            lineCounter++;
+                            if (executableFileLine.Contains("ENDPROC"))
+                            {
+                                endProcLineNumber = lineCounter + lineCount;
+                                break;
+                            }
+                        }
+
+                        if (endProcLineNumber == -1)
+                            throw new EndProcNotFoundException();
+
+                        DataPool.procedures.Add(procName, new List<int> { lineCount, endProcLineNumber });
+                    }
+                }
+
+                lineCount = 0; // Обнуляем счётчик текущей строки после завершения цикла нахождения процедур
+            }
+
             foreach (var line in lines)
             {
                 lineCount++;
@@ -20,6 +66,7 @@ namespace GMIMachine.Lexer
                         break;
                 }
 
+                // Применяется для блока IFBLOCK
                 if (DataPool.linesRangeBlackList.Count > 0)
                     if (DataPool.linesRangeBlackList.Contains(lineCount))
                     {
@@ -34,38 +81,16 @@ namespace GMIMachine.Lexer
                     {
                         if (lineCount < procedure.Value[1] && lineCount > procedure.Value[0])
                         {
-                            if (!DataPool.procedureIsStarted)
+                            if (fromProcedure != procedure.Key)
                             {
                                 alert = true;
                                 break;
                             }
-                            else
-                            {
-                                if (DataPool.startedProcedures.Contains(procedure.Key))
-                                    if (DataPool.startedProcedures.IndexOf(procedure.Key) != 0)
-                                    {
-                                        alert = true;
-                                        break;
-                                    }
-                            }
-                        }
-                        else
-                        {
-                            if (DataPool.procedureIsStarted)
-                                if (DataPool.startedProcedures.Contains(procedure.Key))
-                                {
-                                    alert = true;
-                                    break;
-                                }
                         }
                     }
 
                     if (alert)
                         continue;
-
-                    if (DataPool.procedureIsStarted)
-                        if (line == "ENDPROC")
-                            break;
                 }
 
                 // Проверка на пустую строку
@@ -148,7 +173,7 @@ namespace GMIMachine.Lexer
                         if (GetSpaceSymbolsCount(rightOfExpProc) > 0)
                             throw new CodeSyntaxException();
 
-                        await Parser.Parser.Parse("PROCEDURE", rightOfExpProc, port, lineCount, executableFilePath);
+                        //await Parser.Parser.Parse("PROCEDURE", rightOfExpProc, port, lineCount, executableFilePath);
 
                         break;
 
@@ -157,7 +182,7 @@ namespace GMIMachine.Lexer
                         if (GetSpaceSymbolsCount(rightOfCall) > 0)
                             throw new CodeSyntaxException();
 
-                        await Parser.Parser.Parse("CALL", rightOfCall, port, lineCount, executableFilePath);
+                        await Parser.Parser.Parse("CALL", rightOfCall, port, lineCount, executableFilePath, lines: lines);
 
                         break;
 

@@ -1,4 +1,5 @@
 ﻿using System.Net.Sockets;
+using System.Text;
 
 namespace GMIMachine
 {
@@ -18,9 +19,9 @@ namespace GMIMachine
         {
             if (File.Exists(_executeFilePath))
             {
-                string[] sourceLines = await File.ReadAllLinesAsync(_executeFilePath);
+                string[] sourceLines = await File.ReadAllLinesAsync(_executeFilePath, Encoding.UTF8);
 
-                await Lexer.Lexer.LexarySearch(sourceLines, _tcpServerPort, _executeFilePath);
+                await Lexer.Lexer.LexarySearch(sourceLines, _tcpServerPort, _executeFilePath, firstStart: true);
             }
             else
                 throw new ExecutableFileNotFoundException();
