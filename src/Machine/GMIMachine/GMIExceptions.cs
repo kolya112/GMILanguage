@@ -77,4 +77,25 @@ namespace GMIMachine
     {
         public EndIfNotFoundException() : base() { }
     }
+
+    // Выражение ENDREPEAT не найдено
+
+    internal class EndRepeatNotFoundException : Exception
+    {
+        public EndRepeatNotFoundException() : base() { }
+    }
+
+    // Если число в цикле REPEAT не входит в ОДЗ
+
+    internal class RepeatCountNotInRangeException : Exception
+    {
+        public RepeatCountNotInRangeException() : base() { }
+    }
+
+    // Если в цикле REPEAT обнаружен бесконечный цикл
+
+    internal class RepeatCountFoundEndlessCycle : Exception
+    {
+        public RepeatCountFoundEndlessCycle() : base() { }
+    }
 }

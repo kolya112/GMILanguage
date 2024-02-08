@@ -125,7 +125,7 @@ namespace GMIMachine.Lexer
                         if (GetSpaceSymbolsCount(rightOfIfBlock) > 0)
                             throw new CodeSyntaxException();
 
-                        await Parser.Parser.Parse("IFBLOCK", rightOfIfBlock, port, lineCount, executableFilePath, leftOfIfBlock);
+                        await Parser.Parser.Parse("IFBLOCK", rightOfIfBlock, port, lineCount, executableFilePath, leftOfIfBlock, lines);
 
                         break;
 
@@ -173,8 +173,6 @@ namespace GMIMachine.Lexer
                         if (GetSpaceSymbolsCount(rightOfExpProc) > 0)
                             throw new CodeSyntaxException();
 
-                        //await Parser.Parser.Parse("PROCEDURE", rightOfExpProc, port, lineCount, executableFilePath);
-
                         break;
 
                     case string when line.Contains("CALL "):
@@ -188,6 +186,18 @@ namespace GMIMachine.Lexer
 
                     case string when line.Contains("ENDPROC"):
                         break;
+
+                    case string when line.Contains("REPEAT "):
+                        string rightOfRepeat = line.Split("REPEAT ")[1];
+                        string leftOfRepeat = line.Split("REPEAT ")[0];
+                        if (GetSpaceSymbolsCount(rightOfRepeat) > 0)
+                            throw new CodeSyntaxException();
+
+                        await Parser.Parser.Parse("REPEAT", rightOfRepeat, port, lineCount, executableFilePath, leftOfRepeat, lines);
+                        break;
+
+                    //case string when line.Contains("ENDREPEAT"):
+                      //  break;
 
                     default:
                         throw new CodeSyntaxException();

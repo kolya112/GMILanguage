@@ -250,15 +250,11 @@ namespace GMIMachine.Parser
                         line != Common.Constants.Literals[4])
                             throw new CodeSyntaxException();
 
-                    //int spaceSymbolsInExp = Lexer.Lexer.GetSpaceSymbolsCount(leftLineOfExp); // Получаем количество пустых символов
                     int spaceSymbolsInExp = leftLineOfExp.Length; // Получаем количество пустых символов
-
-                    //await ServerProvider.SendPacket("leftLineOfExp: '" + leftLineOfExp.ToCharArray().Length + "'", port);
 
                     // Ищем выражение ENDIF
                     int endIfBlockLineNumber = -1;
-                    string[] executableFileLinesForIfBlock = await File.ReadAllLinesAsync(executeFilePath, Encoding.UTF8);
-                    List<string> executableFileLinesInListForIfBlock = executableFileLinesForIfBlock.ToList();
+                    List<string> executableFileLinesInListForIfBlock = lines.ToList();
                     executableFileLinesInListForIfBlock.RemoveRange(0, lineCount);
 
                     int lineCounterIfBlock = 0;
@@ -268,7 +264,6 @@ namespace GMIMachine.Parser
                         lineCounterIfBlock++;
                         if (executableFileLine.Contains("ENDIF"))
                         {
-                            //int spaceSymbolsInCurrentLine = Lexer.Lexer.GetSpaceSymbolsCount(executableFileLine.Split("ENDIF")[0]);
                             int spaceSymbolsInCurrentLine = executableFileLine.Split("ENDIF")[0].Length;
 
                             if (spaceSymbolsInExp == spaceSymbolsInCurrentLine)
@@ -291,7 +286,7 @@ namespace GMIMachine.Parser
                             DataPool.CodeLevel += 1;
                             if (DataPool.CodeLevel > 3)
                                 throw new CodeLevelException();
-                            await Lexer.Lexer.LexarySearch(executableFileLinesForIfBlock, port, executeFilePath, lineCount + 1, endIfBlockLineNumber - 1);
+                            await Lexer.Lexer.LexarySearch(lines, port, executeFilePath, lineCount + 1, endIfBlockLineNumber - 1);
                             DataPool.CodeLevel -= 1;
                         }
                     }
@@ -303,7 +298,7 @@ namespace GMIMachine.Parser
                             DataPool.CodeLevel += 1;
                             if (DataPool.CodeLevel > 3)
                                 throw new CodeLevelException();
-                            await Lexer.Lexer.LexarySearch(executableFileLinesForIfBlock, port, executeFilePath, lineCount + 1, endIfBlockLineNumber - 1);
+                            await Lexer.Lexer.LexarySearch(lines, port, executeFilePath, lineCount + 1, endIfBlockLineNumber - 1);
                             DataPool.CodeLevel -= 1;
                         }
                     }
@@ -315,7 +310,7 @@ namespace GMIMachine.Parser
                             DataPool.CodeLevel += 1;
                             if (DataPool.CodeLevel > 3)
                                 throw new CodeLevelException();
-                            await Lexer.Lexer.LexarySearch(executableFileLinesForIfBlock, port, executeFilePath, lineCount + 1, endIfBlockLineNumber - 1);
+                            await Lexer.Lexer.LexarySearch(lines, port, executeFilePath, lineCount + 1, endIfBlockLineNumber - 1);
                             DataPool.CodeLevel -= 1;
                         }
                     }
@@ -327,12 +322,82 @@ namespace GMIMachine.Parser
                             DataPool.CodeLevel += 1;
                             if (DataPool.CodeLevel > 3)
                                 throw new CodeLevelException();
-                            await Lexer.Lexer.LexarySearch(executableFileLinesForIfBlock, port, executeFilePath, lineCount + 1, endIfBlockLineNumber - 1);
+                            await Lexer.Lexer.LexarySearch(lines, port, executeFilePath, lineCount + 1, endIfBlockLineNumber - 1);
                             DataPool.CodeLevel -= 1;
                         }
                     }
 
                     for (int i = lineCount + 1; i <= endIfBlockLineNumber; i++)
+                        DataPool.linesRangeBlackList.Add(i);
+
+                    break;
+
+                case "REPEAT":
+                    int spaceSymbolsInRepeatExp = leftLineOfExp.Length; // Получаем количество пустых символов
+
+                    // Ищем выражение ENDREPEAT
+                    int repeatLineNumber = -1;
+                    List<string> executableFileLinesInListForRepeat = lines.ToList();
+                    executableFileLinesInListForRepeat.RemoveRange(0, lineCount);
+
+                    int lineCounterRepeat = 0;
+
+                    foreach (var executableFileLine in executableFileLinesInListForRepeat)
+                    {
+                        lineCounterRepeat++;
+                        if (executableFileLine.Contains("ENDREPEAT"))
+                        {
+                            int spaceSymbolsInCurrentLine = executableFileLine.Split("ENDREPEAT")[0].Length;
+
+                            if (spaceSymbolsInRepeatExp == spaceSymbolsInCurrentLine)
+                                repeatLineNumber = lineCounterRepeat + lineCount;
+                            else
+                                continue;
+
+                            break;
+                        }
+                    }
+
+                    if (repeatLineNumber == -1)
+                        throw new EndRepeatNotFoundException();
+
+                    int countRepeat;
+                    if (int.TryParse(line, out int repeatLineBuffer)) // Распознано числовое значение
+                        countRepeat = repeatLineBuffer;
+                    else
+                    // Пробуем отыскать переменную
+                    {
+                        if (DataPool.variables.ContainsKey(line))
+                        {
+                            if (int.TryParse(DataPool.variables[line], out int repeatVarValueBuffer))
+                                countRepeat = repeatVarValueBuffer;
+                            else
+                                throw new VariableNotIntegerException();
+                        }
+                        else
+                            throw new VariableNotFoundException();
+                    }
+
+                    // Если обнаружен бесконечный цикл
+                    if (countRepeat == 0)
+                        throw new RepeatCountFoundEndlessCycle();
+
+                    if (countRepeat < 1)
+                        throw new RepeatCountNotInRangeException();
+
+                    DataPool.CodeLevel += 1;
+                    if (DataPool.CodeLevel > 3)
+                        throw new CodeLevelException();
+
+                    int countRepeatTmp = 0;
+                    while (countRepeatTmp < countRepeat)
+                    {
+                        countRepeatTmp++;
+                        await Lexer.Lexer.LexarySearch(lines, port, executeFilePath, lineCount + 1, repeatLineNumber - 1);
+                    }
+
+                    DataPool.CodeLevel -= 1;
+                    for (int i = lineCount + 1; i <= repeatLineNumber; i++)
                         DataPool.linesRangeBlackList.Add(i);
 
                     break;
