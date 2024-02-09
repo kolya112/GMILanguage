@@ -1,18 +1,14 @@
-﻿using System.Net.Sockets;
-using System.Text;
+﻿using System.Text;
 
 namespace GMIMachine
 {
     public class GMIMachine
     {
         internal string _executeFilePath;
-        internal int _tcpServerPort;
-        internal TcpClient? _tcpClient;
 
-        public GMIMachine(string executeFilePath, int tcpServerPort)
+        public GMIMachine(string executeFilePath)
         {
             _executeFilePath = executeFilePath;
-            _tcpServerPort = tcpServerPort;
         }
 
         public async Task Init()
@@ -21,7 +17,7 @@ namespace GMIMachine
             {
                 string[] sourceLines = await File.ReadAllLinesAsync(_executeFilePath, Encoding.UTF8);
 
-                await Lexer.Lexer.LexarySearch(sourceLines, _tcpServerPort, _executeFilePath, firstStart: true);
+                await Lexer.Lexer.LexarySearch(sourceLines, firstStart: true);
             }
             else
                 throw new ExecutableFileNotFoundException();

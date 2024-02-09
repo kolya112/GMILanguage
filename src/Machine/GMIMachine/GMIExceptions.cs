@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GMIMachine
 {
@@ -16,12 +12,6 @@ namespace GMIMachine
     internal class CodeSyntaxException : Exception
     {
         public CodeSyntaxException() : base("Ошибка синтаксиса") { }
-    }
-
-    // Ошибка подключения к серверу
-    internal class ConnectProcessException : Exception
-    {
-        public ConnectProcessException() : base() { }
     }
 
     // Указанная переменная не найдена

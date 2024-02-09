@@ -4,7 +4,7 @@ namespace GMIMachine.Parser
 {
     internal class Parser
     {
-        internal static async Task Parse(string method, string line, int port, int lineCount = -1, string executeFilePath = "", string leftLineOfExp = "", string[]? lines = null)
+        internal static async Task Parse(string method, string line, int lineCount = -1, string leftLineOfExp = "", string[]? lines = null)
         {
             switch (method)
             {
@@ -39,7 +39,7 @@ namespace GMIMachine.Parser
                 case "COUT_VAR":
                     string variableNameCOut = line;
                     if (DataPool.variables.ContainsKey(variableNameCOut))
-                        Console.WriteLine($"COUT >> {variableNameCOut}:{DataPool.variables[variableNameCOut]}", port);
+                        Console.WriteLine($"COUT >> {variableNameCOut}:{DataPool.variables[variableNameCOut]}");
                     else
                         throw new VariableNotFoundException();
                     break;
@@ -68,7 +68,7 @@ namespace GMIMachine.Parser
                         // Проверяем, не выйдет ли исполнитель за рамки сетки
                         if ((DataPool.coords.X + coordRight) <= 20)
                         {
-                            Console.WriteLine($"X >> {DataPool.coords.X + coordRight}", port);
+                            Console.WriteLine($"X >> {DataPool.coords.X + coordRight}");
                             DataPool.coords.X += coordRight;
                         }
                         else
@@ -103,7 +103,7 @@ namespace GMIMachine.Parser
                         // Проверяем, не выйдет ли исполнитель за рамки сетки
                         if ((DataPool.coords.X - coordLeft) >= 0)
                         {
-                            Console.WriteLine($"X >> {DataPool.coords.X - coordLeft}", port);
+                            Console.WriteLine($"X >> {DataPool.coords.X - coordLeft}");
                             DataPool.coords.X -= coordLeft;
                         }
                         else
@@ -138,7 +138,7 @@ namespace GMIMachine.Parser
                         // Проверяем, не выйдет ли исполнитель за рамки сетки
                         if ((DataPool.coords.Y + coordUp) <= 20)
                         {
-                            Console.WriteLine($"Y >> {DataPool.coords.Y + coordUp}", port);
+                            Console.WriteLine($"Y >> {DataPool.coords.Y + coordUp}");
                             DataPool.coords.Y += coordUp;
                         }
                         else
@@ -173,7 +173,7 @@ namespace GMIMachine.Parser
                         // Проверяем, не выйдет ли исполнитель за рамки сетки
                         if ((DataPool.coords.Y - coordDown) >= 0)
                         {
-                            Console.WriteLine($"Y >> {DataPool.coords.Y - coordDown}", port);
+                            Console.WriteLine($"Y >> {DataPool.coords.Y - coordDown}");
                             DataPool.coords.Y -= coordDown;
                         }
                         else
@@ -181,39 +181,6 @@ namespace GMIMachine.Parser
                     }
                     else
                         throw new CoordNotInRangeException();
-
-                    break;
-
-                case "PROCEDURE":
-                    string procName = line;
-
-                    if (Common.Constants.Literals.Contains(procName))
-                        throw new CodeSyntaxException();
-                    else if (!Common.Utils.IsText(procName))
-                        throw new CodeSyntaxException();
-                    else if (DataPool.procedures.ContainsKey(procName))
-                        throw new CodeSyntaxException();
-
-                    int endProcLineNumber = -1;
-                    string[] executableFileLines = await File.ReadAllLinesAsync(executeFilePath, Encoding.UTF8);
-                    List<string> executableFileLinesInList = executableFileLines.ToList();
-                    executableFileLinesInList.RemoveRange(0, lineCount);
-
-                    int lineCounter = 0;
-                    foreach (var executableFileLine in executableFileLinesInList)
-                    {
-                        lineCounter++;
-                        if (executableFileLine.Contains("ENDPROC"))
-                        {
-                            endProcLineNumber = lineCounter + lineCount;
-                            break;
-                        }
-                    }
-
-                    if (endProcLineNumber == -1)
-                        throw new EndProcNotFoundException();
-
-                    DataPool.procedures.Add(procName, new List<int> { lineCount, endProcLineNumber });
 
                     break;
 
@@ -227,7 +194,7 @@ namespace GMIMachine.Parser
                         DataPool.CodeLevel += 1;
                         if (DataPool.CodeLevel > 3)
                             throw new CodeLevelException();
-                        await Lexer.Lexer.LexarySearch(lines, port, executeFilePath, DataPool.procedures[calledProcName][0] + 1, DataPool.procedures[calledProcName][1] - 1, false, calledProcName);
+                        await Lexer.Lexer.LexarySearch(lines, DataPool.procedures[calledProcName][0] + 1, DataPool.procedures[calledProcName][1] - 1, false, calledProcName);
                         DataPool.startedProcedures.Remove(calledProcName);
                         DataPool.CodeLevel -= 1;
 
@@ -282,7 +249,7 @@ namespace GMIMachine.Parser
                             DataPool.CodeLevel += 1;
                             if (DataPool.CodeLevel > 3)
                                 throw new CodeLevelException();
-                            await Lexer.Lexer.LexarySearch(lines, port, executeFilePath, lineCount + 1, endIfBlockLineNumber - 1);
+                            await Lexer.Lexer.LexarySearch(lines, lineCount + 1, endIfBlockLineNumber - 1);
                             DataPool.CodeLevel -= 1;
                         }
                     }
@@ -294,7 +261,7 @@ namespace GMIMachine.Parser
                             DataPool.CodeLevel += 1;
                             if (DataPool.CodeLevel > 3)
                                 throw new CodeLevelException();
-                            await Lexer.Lexer.LexarySearch(lines, port, executeFilePath, lineCount + 1, endIfBlockLineNumber - 1);
+                            await Lexer.Lexer.LexarySearch(lines, lineCount + 1, endIfBlockLineNumber - 1);
                             DataPool.CodeLevel -= 1;
                         }
                     }
@@ -306,7 +273,7 @@ namespace GMIMachine.Parser
                             DataPool.CodeLevel += 1;
                             if (DataPool.CodeLevel > 3)
                                 throw new CodeLevelException();
-                            await Lexer.Lexer.LexarySearch(lines, port, executeFilePath, lineCount + 1, endIfBlockLineNumber - 1);
+                            await Lexer.Lexer.LexarySearch(lines, lineCount + 1, endIfBlockLineNumber - 1);
                             DataPool.CodeLevel -= 1;
                         }
                     }
@@ -318,7 +285,7 @@ namespace GMIMachine.Parser
                             DataPool.CodeLevel += 1;
                             if (DataPool.CodeLevel > 3)
                                 throw new CodeLevelException();
-                            await Lexer.Lexer.LexarySearch(lines, port, executeFilePath, lineCount + 1, endIfBlockLineNumber - 1);
+                            await Lexer.Lexer.LexarySearch(lines, lineCount + 1, endIfBlockLineNumber - 1);
                             DataPool.CodeLevel -= 1;
                         }
                     }
@@ -389,7 +356,7 @@ namespace GMIMachine.Parser
                     while (countRepeatTmp < countRepeat)
                     {
                         countRepeatTmp++;
-                        await Lexer.Lexer.LexarySearch(lines, port, executeFilePath, lineCount + 1, repeatLineNumber - 1);
+                        await Lexer.Lexer.LexarySearch(lines, lineCount + 1, repeatLineNumber - 1);
                     }
 
                     DataPool.CodeLevel -= 1;

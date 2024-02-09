@@ -7,10 +7,10 @@ namespace GMIMachine
         static async Task Main(string[] args)
         {
             if (args.Length != 1)
-                throw new Exception("Неверное количество аргументов");
+                throw new Exception("Передано неверное количество аргументов");
 
             // Инициализация конструктора класса GMIMachine
-            var machine = new GMIMachine(args[0], 0);
+            var machine = new GMIMachine(args[0]);
             // Запускаем машину-интерпретатор
             await machine.Init();
         }

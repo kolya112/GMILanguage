@@ -4,7 +4,7 @@ namespace GMIMachine.Lexer
 {
     internal class Lexer
     {
-        internal static async Task LexarySearch(string[] lines, int port, string executableFilePath, int startLineIndex = -1, int endLineIndex = -1, bool firstStart = false, string fromProcedure = "")
+        internal static async Task LexarySearch(string[] lines, int startLineIndex = -1, int endLineIndex = -1, bool firstStart = false, string fromProcedure = "")
         {
             int lineCount = 0; // Счётчик текущей строки
             
@@ -106,7 +106,7 @@ namespace GMIMachine.Lexer
                         if (rightOfExpSET.ToCharArray()[0] == ' ')
                             throw new CodeSyntaxException();
 
-                        await Parser.Parser.Parse("SET", rightOfExpSET, port);
+                        await Parser.Parser.Parse("SET", rightOfExpSET);
 
                         break;
 
@@ -115,7 +115,7 @@ namespace GMIMachine.Lexer
                         if (Common.Utils.GetSpaceSymbolsCount(rightOfCOut) > 0)
                             throw new CodeSyntaxException();
 
-                        await Parser.Parser.Parse("COUT_VAR", rightOfCOut, port);
+                        await Parser.Parser.Parse("COUT_VAR", rightOfCOut);
 
                         break;
 
@@ -125,7 +125,7 @@ namespace GMIMachine.Lexer
                         if (Common.Utils.GetSpaceSymbolsCount(rightOfIfBlock) > 0)
                             throw new CodeSyntaxException();
 
-                        await Parser.Parser.Parse("IFBLOCK", rightOfIfBlock, port, lineCount, executableFilePath, leftOfIfBlock, lines);
+                        await Parser.Parser.Parse("IFBLOCK", rightOfIfBlock, lineCount, leftOfIfBlock, lines);
 
                         break;
 
@@ -134,7 +134,7 @@ namespace GMIMachine.Lexer
                         if (Common.Utils.GetSpaceSymbolsCount(rightOfRight) > 0)
                             throw new CodeSyntaxException();
 
-                        await Parser.Parser.Parse("RIGHT", rightOfRight, port);
+                        await Parser.Parser.Parse("RIGHT", rightOfRight);
 
                         break;
 
@@ -143,7 +143,7 @@ namespace GMIMachine.Lexer
                         if (Common.Utils.GetSpaceSymbolsCount(rightOfLeft) > 0)
                             throw new CodeSyntaxException();
 
-                        await Parser.Parser.Parse("LEFT", rightOfLeft, port);
+                        await Parser.Parser.Parse("LEFT", rightOfLeft);
 
                         break;
 
@@ -152,7 +152,7 @@ namespace GMIMachine.Lexer
                         if (Common.Utils.GetSpaceSymbolsCount(rightOfUp) > 0)
                             throw new CodeSyntaxException();
 
-                        await Parser.Parser.Parse("UP", rightOfUp, port);
+                        await Parser.Parser.Parse("UP", rightOfUp);
 
                         break;
 
@@ -161,7 +161,7 @@ namespace GMIMachine.Lexer
                         if (Common.Utils.GetSpaceSymbolsCount(rightOfDown) > 0)
                             throw new CodeSyntaxException();
 
-                        await Parser.Parser.Parse("DOWN", rightOfDown, port);
+                        await Parser.Parser.Parse("DOWN", rightOfDown);
 
                         break;
 
@@ -180,7 +180,7 @@ namespace GMIMachine.Lexer
                         if (Common.Utils.GetSpaceSymbolsCount(rightOfCall) > 0)
                             throw new CodeSyntaxException();
 
-                        await Parser.Parser.Parse("CALL", rightOfCall, port, lineCount, executableFilePath, lines: lines);
+                        await Parser.Parser.Parse("CALL", rightOfCall, lineCount, lines: lines);
 
                         break;
 
@@ -193,7 +193,7 @@ namespace GMIMachine.Lexer
                         if (Common.Utils.GetSpaceSymbolsCount(rightOfRepeat) > 0)
                             throw new CodeSyntaxException();
 
-                        await Parser.Parser.Parse("REPEAT", rightOfRepeat, port, lineCount, executableFilePath, leftOfRepeat, lines);
+                        await Parser.Parser.Parse("REPEAT", rightOfRepeat, lineCount, leftOfRepeat, lines);
                         break;
 
                     default:
