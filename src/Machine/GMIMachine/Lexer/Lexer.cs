@@ -204,16 +204,5 @@ namespace GMIMachine.Lexer
                 }
             }
         }
-
-        internal static int GetSpaceSymbolsCount(string line)
-        {
-            int spaceSymbolsCount = 0;
-            for (int i = 0; i < line.Length; i++)
-            {
-                if (line.ToCharArray()[i] == ' ')
-                    spaceSymbolsCount++;
-            }
-            return spaceSymbolsCount;
-        }
     }
 }
