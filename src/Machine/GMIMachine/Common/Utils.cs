@@ -17,6 +17,11 @@ namespace GMIMachine.Common
             return true;
         }
 
+        /// <summary>
+        /// Получить количество пробелов в строке
+        /// </summary>
+        /// <param name="line">Строка</param>
+        /// <returns></returns>
         internal static int GetSpaceSymbolsCount(string line)
         {
             int spaceSymbolsCount = 0;
