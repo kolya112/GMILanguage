@@ -39,7 +39,6 @@ namespace GMIMachine.Parser
                 case "COUT_VAR":
                     string variableNameCOut = line;
                     if (DataPool.variables.ContainsKey(variableNameCOut))
-                        //await ServerProvider.SendPacket($"COUT >> {variableNameCOut}:{DataPool.variables[variableNameCOut]}", port);
                         Console.WriteLine($"COUT >> {variableNameCOut}:{DataPool.variables[variableNameCOut]}", port);
                     else
                         throw new VariableNotFoundException();
@@ -69,7 +68,6 @@ namespace GMIMachine.Parser
                         // Проверяем, не выйдет ли исполнитель за рамки сетки
                         if ((DataPool.coords.X + coordRight) <= 20)
                         {
-                            //await ServerProvider.SendPacket($"X >> {DataPool.coords.X + coordRight}", port);
                             Console.WriteLine($"X >> {DataPool.coords.X + coordRight}", port);
                             DataPool.coords.X += coordRight;
                         }
@@ -105,7 +103,6 @@ namespace GMIMachine.Parser
                         // Проверяем, не выйдет ли исполнитель за рамки сетки
                         if ((DataPool.coords.X - coordLeft) >= 0)
                         {
-                            //await ServerProvider.SendPacket($"X >> {DataPool.coords.X - coordLeft}", port);
                             Console.WriteLine($"X >> {DataPool.coords.X - coordLeft}", port);
                             DataPool.coords.X -= coordLeft;
                         }
@@ -141,7 +138,6 @@ namespace GMIMachine.Parser
                         // Проверяем, не выйдет ли исполнитель за рамки сетки
                         if ((DataPool.coords.Y + coordUp) <= 20)
                         {
-                            //await ServerProvider.SendPacket($"Y >> {DataPool.coords.Y + coordUp}", port);
                             Console.WriteLine($"Y >> {DataPool.coords.Y + coordUp}", port);
                             DataPool.coords.Y += coordUp;
                         }

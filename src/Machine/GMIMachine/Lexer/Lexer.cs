@@ -196,9 +196,6 @@ namespace GMIMachine.Lexer
                         await Parser.Parser.Parse("REPEAT", rightOfRepeat, port, lineCount, executableFilePath, leftOfRepeat, lines);
                         break;
 
-                    //case string when line.Contains("ENDREPEAT"):
-                      //  break;
-
                     default:
                         throw new CodeSyntaxException();
                 }
