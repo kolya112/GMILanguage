@@ -101,7 +101,7 @@ namespace GMIMachine.Lexer
                 {
                     case string when line.Contains("SET "):
                         string rightOfExpSET = line.Split("SET ")[1];
-                        if (GetSpaceSymbolsCount(rightOfExpSET) > 2)
+                        if (Common.Utils.GetSpaceSymbolsCount(rightOfExpSET) > 2)
                             throw new CodeSyntaxException();
                         if (rightOfExpSET.ToCharArray()[0] == ' ')
                             throw new CodeSyntaxException();
@@ -112,7 +112,7 @@ namespace GMIMachine.Lexer
 
                     case string when line.Contains("COUT VAR >> "):
                         string rightOfCOut = line.Split("COUT VAR >> ")[1];
-                        if (GetSpaceSymbolsCount(rightOfCOut) > 0)
+                        if (Common.Utils.GetSpaceSymbolsCount(rightOfCOut) > 0)
                             throw new CodeSyntaxException();
 
                         await Parser.Parser.Parse("COUT_VAR", rightOfCOut, port);
@@ -122,7 +122,7 @@ namespace GMIMachine.Lexer
                     case string when line.Contains("IFBLOCK "):
                         string rightOfIfBlock = line.Split("IFBLOCK ")[1];
                         string leftOfIfBlock = line.Split("IFBLOCK ")[0];
-                        if (GetSpaceSymbolsCount(rightOfIfBlock) > 0)
+                        if (Common.Utils.GetSpaceSymbolsCount(rightOfIfBlock) > 0)
                             throw new CodeSyntaxException();
 
                         await Parser.Parser.Parse("IFBLOCK", rightOfIfBlock, port, lineCount, executableFilePath, leftOfIfBlock, lines);
@@ -131,7 +131,7 @@ namespace GMIMachine.Lexer
 
                     case string when line.Contains("RIGHT "):
                         string rightOfRight = line.Split("RIGHT ")[1];
-                        if (GetSpaceSymbolsCount(rightOfRight) > 0)
+                        if (Common.Utils.GetSpaceSymbolsCount(rightOfRight) > 0)
                             throw new CodeSyntaxException();
 
                         await Parser.Parser.Parse("RIGHT", rightOfRight, port);
@@ -140,7 +140,7 @@ namespace GMIMachine.Lexer
 
                     case string when line.Contains("LEFT "):
                         string rightOfLeft = line.Split("LEFT ")[1];
-                        if (GetSpaceSymbolsCount(rightOfLeft) > 0)
+                        if (Common.Utils.GetSpaceSymbolsCount(rightOfLeft) > 0)
                             throw new CodeSyntaxException();
 
                         await Parser.Parser.Parse("LEFT", rightOfLeft, port);
@@ -149,7 +149,7 @@ namespace GMIMachine.Lexer
 
                     case string when line.Contains("UP "):
                         string rightOfUp = line.Split("UP ")[1];
-                        if (GetSpaceSymbolsCount(rightOfUp) > 0)
+                        if (Common.Utils.GetSpaceSymbolsCount(rightOfUp) > 0)
                             throw new CodeSyntaxException();
 
                         await Parser.Parser.Parse("UP", rightOfUp, port);
@@ -158,7 +158,7 @@ namespace GMIMachine.Lexer
 
                     case string when line.Contains("DOWN "):
                         string rightOfDown = line.Split("DOWN ")[1];
-                        if (GetSpaceSymbolsCount(rightOfDown) > 0)
+                        if (Common.Utils.GetSpaceSymbolsCount(rightOfDown) > 0)
                             throw new CodeSyntaxException();
 
                         await Parser.Parser.Parse("DOWN", rightOfDown, port);
@@ -170,14 +170,14 @@ namespace GMIMachine.Lexer
                             throw new ProcedureIsStartedException();
 
                         string rightOfExpProc = line.Split("PROCEDURE ")[1];
-                        if (GetSpaceSymbolsCount(rightOfExpProc) > 0)
+                        if (Common.Utils.GetSpaceSymbolsCount(rightOfExpProc) > 0)
                             throw new CodeSyntaxException();
 
                         break;
 
                     case string when line.Contains("CALL "):
                         string rightOfCall = line.Split("CALL ")[1];
-                        if (GetSpaceSymbolsCount(rightOfCall) > 0)
+                        if (Common.Utils.GetSpaceSymbolsCount(rightOfCall) > 0)
                             throw new CodeSyntaxException();
 
                         await Parser.Parser.Parse("CALL", rightOfCall, port, lineCount, executableFilePath, lines: lines);
@@ -190,7 +190,7 @@ namespace GMIMachine.Lexer
                     case string when line.Contains("REPEAT "):
                         string rightOfRepeat = line.Split("REPEAT ")[1];
                         string leftOfRepeat = line.Split("REPEAT ")[0];
-                        if (GetSpaceSymbolsCount(rightOfRepeat) > 0)
+                        if (Common.Utils.GetSpaceSymbolsCount(rightOfRepeat) > 0)
                             throw new CodeSyntaxException();
 
                         await Parser.Parser.Parse("REPEAT", rightOfRepeat, port, lineCount, executableFilePath, leftOfRepeat, lines);
