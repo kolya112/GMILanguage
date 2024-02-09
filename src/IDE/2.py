@@ -1,11 +1,15 @@
-from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QFileDialog, QTextEdit, QMessageBox
+from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QMessageBox
 from PyQt5.QtGui import QPainter, QPen, QImage, QIcon
-from PyQt5.QtCore import Qt, QPointF, QTimer
+from PyQt5.QtCore import Qt, QTimer
 from PyQt5 import uic
 
 from subprocess import *
 
 import sys
+
+import os
+
+ptm = os.path.abspath(os.getcwd()) + "\\GMIMachine.exe"
 
 class Window(QMainWindow):
     def __init__(self):
@@ -25,6 +29,7 @@ class Window(QMainWindow):
         self.x = 0
         self.y = 0
         self.v = 30
+
     def paintEvent(self, pe):
         painter = QPainter(self)
         x = 0
@@ -38,6 +43,7 @@ class Window(QMainWindow):
             y += self.v
         painter.drawImage(self.x * self.v, self.v * 20 - self.y * self.v,
                           self.img)
+
     def te(self):
         if self.i >= len(self.pts):
             self.t.stop()
@@ -46,46 +52,59 @@ class Window(QMainWindow):
             if self.x < self.pts[self.i][1]:
                 self.x += 1
             elif self.x > self.pts[self.i][1]:
-                self.x -=1
+                self.x -= 1
             else:
                 self.i += 1
-        if self.pts[self.i][0] == 'Y':
+        elif self.pts[self.i][0] == 'Y':
             if self.y < self.pts[self.i][1]:
                 self.y += 1
             elif self.y > self.pts[self.i][1]:
-                self.y -=1
+                self.y -= 1
             else:
                 self.i += 1
         self.update()
+
     def somerror(self):
         poperr = QMessageBox()
         poperr.setWindowTitle("exception raised")
-        poperr.setText(self.errs)
+        poperr.setText(str(self.errs.split('\n')[0]))
         poperr.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
         poperr.exec_()
+
     def run(self):
         if not self.pts:
-            f = Popen(["python", "1.py", T.file], stdin=PIPE, stdout=PIPE, stderr=PIPE, encoding="utf-8")
+            si = STARTUPINFO()
+            si.dwFlags | STARTF_USESHOWWINDOW
+            si.wShowWindow = SW_HIDE
+            f = Popen([ptm, T.file],
+                      stdin=PIPE, stdout=PIPE, stderr=PIPE, encoding="utf-8", startupinfo=si)
             cords, errs = f.stdout.read(), f.stderr.read()
             cords = cords.rstrip()
             self.errs = errs
-            if errs:
+            f.kill()
+            if self.errs:
+                with open(T.file[:-4] + "crashlog.log", 'a') as crash:
+                    crash.write('_' * 50 + '\n')
+                    crash.write(self.errs + '\n')
                 self.somerror()
                 self.pts = cords
                 return
-            self.show()
-            with open(T.file[:-4] + ".log", "a") as log:
+            with open(T.file[:-4] + "log.log", "a") as log:
                 log.write('_' * 50 + '\n')
                 for c in cords.split('\n'):
                     log.write(c + '\n')
                     n = c.split(" >> ")
                     self.pts.append([n[0], int(n[1])])
+            self.show()
             self.t.start(100)
+
     def stop(self):
         self.t.stop()
+
     def cont(self):
         if not self.i >= len(self.pts):
             self.t.start(100)
+
 
 class Textui(QMainWindow):
     def __init__(self):
@@ -96,17 +115,19 @@ class Textui(QMainWindow):
 
         self.setWindowIcon(QIcon("icon.png"))
         self.actionRun.triggered.connect(self.run)
-        self.actionStop.triggered.connect(self.stop)
+        self.actionStop.triggered.connect(w.stop)
         self.actionSave.triggered.connect(self.save)
         self.actionSave_as.triggered.connect(self.saveas)
         self.actionOpen.triggered.connect(self.open)
-        self.actionContinue.triggered.connect(self.cont)
+        self.actionContinue.triggered.connect(w.cont)
         self.textedit.textChanged.connect(self.change)
         self.show()
+
     def change(self):
         self.fl = True
+
     def run(self):
-        if self.fl == False:
+        if not self.fl:
             w.run()
         else:
             wanna = QMessageBox()
@@ -116,10 +137,7 @@ class Textui(QMainWindow):
             ret = wanna.exec()
             if ret == QMessageBox.Ok:
                 self.save()
-    def stop(self):
-        w.stop()
-    def cont(self):
-        w.cont()
+
     def save(self):
         if self.file:
             with open(self.file, "w") as of:
@@ -127,6 +145,11 @@ class Textui(QMainWindow):
         else:
             self.saveas()
         self.fl = False
+        w.pts = []
+        w.i = 0
+        w.x = 0
+        w.y = 0
+
     def open(self):
         fod = QFileDialog()
         fod.setFileMode(QFileDialog.AnyFile)
@@ -146,8 +169,9 @@ class Textui(QMainWindow):
                 pop = QMessageBox()
                 pop.setText("Не удалось найти этот файл")
                 pop.setWindowTitle("Ошибка")
-                pop.setStandardButtons(QMessageBox.Ok |QMessageBox.Cancel)
+                pop.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
                 pop.exec_()
+
     def saveas(self):
         fsd = QFileDialog()
         fsd.setFileMode(QFileDialog.AnyFile)
@@ -156,8 +180,10 @@ class Textui(QMainWindow):
         fsd.setViewMode(QFileDialog.Detail)
         if fsd.exec_():
             self.file = fsd.selectedFiles()[-1]
-            if self.file[-4:] != ".txt": self.file += ".txt"
+            if self.file[-4:] != ".txt":
+                self.file += ".txt"
             self.save()
+
 
 app = QApplication(sys.argv)
 
