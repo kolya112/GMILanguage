@@ -66,7 +66,7 @@ namespace GMIMachine.Lexer
                         break;
                 }
 
-                // Применяется для блока IFBLOCK
+                // Применяется для блоков IFBLOCK и циклов REPEAT
                 if (DataPool.linesRangeBlackList.Count > 0)
                     if (DataPool.linesRangeBlackList.Contains(lineCount))
                     {

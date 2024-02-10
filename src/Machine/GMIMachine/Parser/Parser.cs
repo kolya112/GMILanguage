@@ -345,7 +345,7 @@ namespace GMIMachine.Parser
                     if (countRepeat == 0)
                         throw new RepeatCountFoundEndlessCycle();
 
-                    if (countRepeat < 1)
+                    if (countRepeat < 1 || countRepeat > 1000)
                         throw new RepeatCountNotInRangeException();
 
                     DataPool.CodeLevel += 1;
