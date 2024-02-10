@@ -4,7 +4,7 @@ namespace GMIMachine.Parser
 {
     internal class Parser
     {
-        internal static async Task Parse(string method, string line, int port, int lineCount = -1, string executeFilePath = "", string leftLineOfExp = "")
+        internal static async Task Parse(string method, string line, int lineCount = -1, string leftLineOfExp = "", string[]? lines = null)
         {
             switch (method)
             {
@@ -16,12 +16,13 @@ namespace GMIMachine.Parser
 
                     if (Common.Constants.Literals.Contains(variableNameSET))
                         throw new CodeSyntaxException();
-                    else if (!IsText(variableNameSET))
+                    else if (!Common.Utils.IsText(variableNameSET))
                         throw new CodeSyntaxException();
 
                     string variableValueSET = spaceInExpSET[2];
 
                     if (!int.TryParse(variableValueSET, out int variableValueInDigitSET))
+                        // Если в виде значения обнаружена строка, проверяем, есть ли переменная с таким названием, если есть - приравниваем новую переменную к значению существующей
                         if (DataPool.variables.ContainsKey(variableValueSET))
                             variableValueSET = DataPool.variables[variableValueSET];
                         else
@@ -38,7 +39,7 @@ namespace GMIMachine.Parser
                 case "COUT_VAR":
                     string variableNameCOut = line;
                     if (DataPool.variables.ContainsKey(variableNameCOut))
-                        await ServerProvider.SendPacket($"COUT >> {variableNameCOut}:{DataPool.variables[variableNameCOut]}", port);
+                        Console.WriteLine($"COUT >> {variableNameCOut}:{DataPool.variables[variableNameCOut]}");
                     else
                         throw new VariableNotFoundException();
                     break;
@@ -67,7 +68,7 @@ namespace GMIMachine.Parser
                         // Проверяем, не выйдет ли исполнитель за рамки сетки
                         if ((DataPool.coords.X + coordRight) <= 20)
                         {
-                            await ServerProvider.SendPacket($"X >> {DataPool.coords.X + coordRight}", port);
+                            Console.WriteLine($"X >> {DataPool.coords.X + coordRight}");
                             DataPool.coords.X += coordRight;
                         }
                         else
@@ -102,7 +103,7 @@ namespace GMIMachine.Parser
                         // Проверяем, не выйдет ли исполнитель за рамки сетки
                         if ((DataPool.coords.X - coordLeft) >= 0)
                         {
-                            await ServerProvider.SendPacket($"X >> {DataPool.coords.X - coordLeft}", port);
+                            Console.WriteLine($"X >> {DataPool.coords.X - coordLeft}");
                             DataPool.coords.X -= coordLeft;
                         }
                         else
@@ -137,7 +138,7 @@ namespace GMIMachine.Parser
                         // Проверяем, не выйдет ли исполнитель за рамки сетки
                         if ((DataPool.coords.Y + coordUp) <= 20)
                         {
-                            await ServerProvider.SendPacket($"Y >> {DataPool.coords.Y + coordUp}", port);
+                            Console.WriteLine($"Y >> {DataPool.coords.Y + coordUp}");
                             DataPool.coords.Y += coordUp;
                         }
                         else
@@ -172,7 +173,7 @@ namespace GMIMachine.Parser
                         // Проверяем, не выйдет ли исполнитель за рамки сетки
                         if ((DataPool.coords.Y - coordDown) >= 0)
                         {
-                            await ServerProvider.SendPacket($"Y >> {DataPool.coords.Y - coordDown}", port);
+                            Console.WriteLine($"Y >> {DataPool.coords.Y - coordDown}");
                             DataPool.coords.Y -= coordDown;
                         }
                         else
@@ -180,40 +181,6 @@ namespace GMIMachine.Parser
                     }
                     else
                         throw new CoordNotInRangeException();
-
-                    break;
-
-                case "PROCEDURE":
-                    string procName = line;
-
-                    if (Common.Constants.Literals.Contains(procName))
-                        throw new CodeSyntaxException();
-                    else if (!IsText(procName))
-                        throw new CodeSyntaxException();
-
-                    if (DataPool.procedures.ContainsKey(procName))
-                        throw new CodeSyntaxException();
-
-                    int endProcLineNumber = -1;
-                    string[] executableFileLines = await File.ReadAllLinesAsync(executeFilePath, Encoding.UTF8);
-                    List<string> executableFileLinesInList = executableFileLines.ToList();
-                    executableFileLinesInList.RemoveRange(0, lineCount);
-
-                    int lineCounter = 0;
-                    foreach (var executableFileLine in executableFileLinesInList)
-                    {
-                        lineCounter++;
-                        if (executableFileLine.Contains("ENDPROC"))
-                        {
-                            endProcLineNumber = lineCounter + lineCount;
-                            break;
-                        }
-                    }
-
-                    if (endProcLineNumber == -1)
-                        throw new EndProcNotFoundException();
-
-                    DataPool.procedures.Add(procName, new List<int> { lineCount, endProcLineNumber });
 
                     break;
 
@@ -227,8 +194,7 @@ namespace GMIMachine.Parser
                         DataPool.CodeLevel += 1;
                         if (DataPool.CodeLevel > 3)
                             throw new CodeLevelException();
-                        string[] executableFileLinesCall = await File.ReadAllLinesAsync(executeFilePath, Encoding.UTF8);
-                        await Lexer.Lexer.LexarySearch(executableFileLinesCall, port, executeFilePath);
+                        await Lexer.Lexer.LexarySearch(lines, DataPool.procedures[calledProcName][0] + 1, DataPool.procedures[calledProcName][1] - 1, false, calledProcName);
                         DataPool.startedProcedures.Remove(calledProcName);
                         DataPool.CodeLevel -= 1;
 
@@ -247,15 +213,11 @@ namespace GMIMachine.Parser
                         line != Common.Constants.Literals[4])
                             throw new CodeSyntaxException();
 
-                    //int spaceSymbolsInExp = Lexer.Lexer.GetSpaceSymbolsCount(leftLineOfExp); // Получаем количество пустых символов
                     int spaceSymbolsInExp = leftLineOfExp.Length; // Получаем количество пустых символов
-
-                    //await ServerProvider.SendPacket("leftLineOfExp: '" + leftLineOfExp.ToCharArray().Length + "'", port);
 
                     // Ищем выражение ENDIF
                     int endIfBlockLineNumber = -1;
-                    string[] executableFileLinesForIfBlock = await File.ReadAllLinesAsync(executeFilePath, Encoding.UTF8);
-                    List<string> executableFileLinesInListForIfBlock = executableFileLinesForIfBlock.ToList();
+                    List<string> executableFileLinesInListForIfBlock = lines.ToList();
                     executableFileLinesInListForIfBlock.RemoveRange(0, lineCount);
 
                     int lineCounterIfBlock = 0;
@@ -265,7 +227,6 @@ namespace GMIMachine.Parser
                         lineCounterIfBlock++;
                         if (executableFileLine.Contains("ENDIF"))
                         {
-                            //int spaceSymbolsInCurrentLine = Lexer.Lexer.GetSpaceSymbolsCount(executableFileLine.Split("ENDIF")[0]);
                             int spaceSymbolsInCurrentLine = executableFileLine.Split("ENDIF")[0].Length;
 
                             if (spaceSymbolsInExp == spaceSymbolsInCurrentLine)
@@ -288,7 +249,7 @@ namespace GMIMachine.Parser
                             DataPool.CodeLevel += 1;
                             if (DataPool.CodeLevel > 3)
                                 throw new CodeLevelException();
-                            await Lexer.Lexer.LexarySearch(executableFileLinesForIfBlock, port, executeFilePath, lineCount + 1, endIfBlockLineNumber - 1, "IFBLOCK");
+                            await Lexer.Lexer.LexarySearch(lines, lineCount + 1, endIfBlockLineNumber - 1);
                             DataPool.CodeLevel -= 1;
                         }
                     }
@@ -300,7 +261,7 @@ namespace GMIMachine.Parser
                             DataPool.CodeLevel += 1;
                             if (DataPool.CodeLevel > 3)
                                 throw new CodeLevelException();
-                            await Lexer.Lexer.LexarySearch(executableFileLinesForIfBlock, port, executeFilePath, lineCount + 1, endIfBlockLineNumber - 1, "IFBLOCK");
+                            await Lexer.Lexer.LexarySearch(lines, lineCount + 1, endIfBlockLineNumber - 1);
                             DataPool.CodeLevel -= 1;
                         }
                     }
@@ -312,7 +273,7 @@ namespace GMIMachine.Parser
                             DataPool.CodeLevel += 1;
                             if (DataPool.CodeLevel > 3)
                                 throw new CodeLevelException();
-                            await Lexer.Lexer.LexarySearch(executableFileLinesForIfBlock, port, executeFilePath, lineCount + 1, endIfBlockLineNumber - 1, "IFBLOCK");
+                            await Lexer.Lexer.LexarySearch(lines, lineCount + 1, endIfBlockLineNumber - 1);
                             DataPool.CodeLevel -= 1;
                         }
                     }
@@ -324,7 +285,7 @@ namespace GMIMachine.Parser
                             DataPool.CodeLevel += 1;
                             if (DataPool.CodeLevel > 3)
                                 throw new CodeLevelException();
-                            await Lexer.Lexer.LexarySearch(executableFileLinesForIfBlock, port, executeFilePath, lineCount + 1, endIfBlockLineNumber - 1, "IFBLOCK");
+                            await Lexer.Lexer.LexarySearch(lines, lineCount + 1, endIfBlockLineNumber - 1);
                             DataPool.CodeLevel -= 1;
                         }
                     }
@@ -333,20 +294,77 @@ namespace GMIMachine.Parser
                         DataPool.linesRangeBlackList.Add(i);
 
                     break;
-            }
-        }
 
-        /// <summary>
-        /// Проверяется, содержится ли в указанном тексте цифры, либо какие-либо другие символы, отличные от обычных букв
-        /// </summary>
-        /// <param name="text">Текст</param>
-        /// <returns></returns>
-        internal static bool IsText(string text)
-        {
-            foreach (char c in text)
-                if (!Char.IsLetter(c))
-                    return false;
-            return true;
+                case "REPEAT":
+                    int spaceSymbolsInRepeatExp = leftLineOfExp.Length; // Получаем количество пустых символов
+
+                    // Ищем выражение ENDREPEAT
+                    int repeatLineNumber = -1;
+                    List<string> executableFileLinesInListForRepeat = lines.ToList();
+                    executableFileLinesInListForRepeat.RemoveRange(0, lineCount);
+
+                    int lineCounterRepeat = 0;
+
+                    foreach (var executableFileLine in executableFileLinesInListForRepeat)
+                    {
+                        lineCounterRepeat++;
+                        if (executableFileLine.Contains("ENDREPEAT"))
+                        {
+                            int spaceSymbolsInCurrentLine = executableFileLine.Split("ENDREPEAT")[0].Length;
+
+                            if (spaceSymbolsInRepeatExp == spaceSymbolsInCurrentLine)
+                                repeatLineNumber = lineCounterRepeat + lineCount;
+                            else
+                                continue;
+
+                            break;
+                        }
+                    }
+
+                    if (repeatLineNumber == -1)
+                        throw new EndRepeatNotFoundException();
+
+                    int countRepeat;
+                    if (int.TryParse(line, out int repeatLineBuffer)) // Распознано числовое значение
+                        countRepeat = repeatLineBuffer;
+                    else
+                    // Пробуем отыскать переменную
+                    {
+                        if (DataPool.variables.ContainsKey(line))
+                        {
+                            if (int.TryParse(DataPool.variables[line], out int repeatVarValueBuffer))
+                                countRepeat = repeatVarValueBuffer;
+                            else
+                                throw new VariableNotIntegerException();
+                        }
+                        else
+                            throw new VariableNotFoundException();
+                    }
+
+                    // Если обнаружен бесконечный цикл
+                    if (countRepeat == 0)
+                        throw new RepeatCountFoundEndlessCycle();
+
+                    if (countRepeat < 1)
+                        throw new RepeatCountNotInRangeException();
+
+                    DataPool.CodeLevel += 1;
+                    if (DataPool.CodeLevel > 3)
+                        throw new CodeLevelException();
+
+                    int countRepeatTmp = 0;
+                    while (countRepeatTmp < countRepeat)
+                    {
+                        countRepeatTmp++;
+                        await Lexer.Lexer.LexarySearch(lines, lineCount + 1, repeatLineNumber - 1);
+                    }
+
+                    DataPool.CodeLevel -= 1;
+                    for (int i = lineCount + 1; i <= repeatLineNumber; i++)
+                        DataPool.linesRangeBlackList.Add(i);
+
+                    break;
+            }
         }
     }
 }
