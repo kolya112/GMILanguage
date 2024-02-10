@@ -67,7 +67,7 @@ class Window(QMainWindow):
     def somerror(self):
         poperr = QMessageBox()
         poperr.setWindowTitle("exception raised")
-        poperr.setText(str(self.errs.split('\n')[0]))
+        poperr.setText(str(self.errs))
         poperr.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
         poperr.exec_()
 
@@ -77,8 +77,8 @@ class Window(QMainWindow):
             si.dwFlags | STARTF_USESHOWWINDOW
             si.wShowWindow = SW_HIDE
             f = Popen([ptm, T.file],
-                      stdin=PIPE, stdout=PIPE, stderr=PIPE, encoding="utf-8", startupinfo=si)
-            cords, errs = f.stdout.read(), f.stderr.read()
+                      stdin=PIPE, stdout=PIPE, stderr=PIPE, encoding="utf-8", startupinfo=si, universal_newlines=True)
+            cords, errs = f.stdout.read(), f.stderr.readline()
             cords = cords.rstrip()
             self.errs = errs
             f.kill()
@@ -149,7 +149,7 @@ class Textui(QMainWindow):
 
     def save(self):
         if self.file:
-            with open(self.file, "w") as of:
+            with open(self.file, "w", encoding='utf-8') as of:
                 of.write(self.textedit.toPlainText())
         else:
             self.saveas()
@@ -171,9 +171,10 @@ class Textui(QMainWindow):
             if self.file[-4:] != ".txt":
                 self.file += ".txt"
             try:
-                with open(self.file, 'r') as f:
+                with open(self.file, 'r', encoding="utf-8") as f:
                     t = f.read()
                     self.textedit.setText(t)
+                    self.save()
                     self.fl = False
             except FileNotFoundError:
                 pop = QMessageBox()
