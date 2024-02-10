@@ -82,12 +82,15 @@ class Window(QMainWindow):
             cords = cords.rstrip()
             self.errs = errs
             f.kill()
+            del f
             if self.errs:
                 with open(T.file[:-4] + "crashlog.log", 'a') as crash:
                     crash.write('_' * 50 + '\n')
                     crash.write(self.errs + '\n')
                 self.somerror()
-                self.pts = cords
+                return
+            if not cords:
+                self.show()
                 return
             with open(T.file[:-4] + "log.log", "a") as log:
                 log.write('_' * 50 + '\n')
@@ -95,6 +98,12 @@ class Window(QMainWindow):
                     log.write(c + '\n')
                     n = c.split(" >> ")
                     self.pts.append([n[0], int(n[1])])
+            self.show()
+            self.t.start(100)
+        else:
+            self.i = 0
+            self.x = 0
+            self.y = 0
             self.show()
             self.t.start(100)
 
@@ -146,6 +155,7 @@ class Textui(QMainWindow):
             self.saveas()
         self.fl = False
         w.pts = []
+        w.errs = []
         w.i = 0
         w.x = 0
         w.y = 0
