@@ -77,7 +77,7 @@ class Window(QMainWindow):
             si.dwFlags | STARTF_USESHOWWINDOW
             si.wShowWindow = SW_HIDE
             f = Popen([ptm, T.file],
-                      stdin=PIPE, stdout=PIPE, stderr=PIPE, encoding="utf-8", startupinfo=si, universal_newlines=True)
+                      stdin=PIPE, stdout=PIPE, stderr=PIPE, encoding="CP866", startupinfo=si, universal_newlines=True)
             cords, errs = f.stdout.read(), f.stderr.readline()
             cords = cords.rstrip()
             self.errs = errs
