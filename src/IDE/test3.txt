@@ -1,7 +1,7 @@
 IFBLOCK RIGHT
     RIGHT 2
 ENDIF
-
+цумишгуаицш
 RIGHT 15
 UP 15
 LEFT 15

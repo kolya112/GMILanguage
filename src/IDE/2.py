@@ -13,6 +13,9 @@ ptm = os.path.abspath(os.getcwd()) + "\\GMIMachine.exe"
 
 class Window(QMainWindow):
     def __init__(self):
+        """
+        класс окна с роботом
+        """
         QMainWindow.__init__(self)
         self.pts = []
         self.errs = []
@@ -31,6 +34,9 @@ class Window(QMainWindow):
         self.v = 30
 
     def paintEvent(self, pe):
+        """
+        paintEvent отрисовывает координатную плоскость и перемещения робота
+        """
         painter = QPainter(self)
         x = 0
         painter.setPen(QPen(Qt.lightGray, 1, Qt.SolidLine))
@@ -45,6 +51,11 @@ class Window(QMainWindow):
                           self.img)
 
     def te(self):
+        """
+        te метод с которым соединен таймер,
+         вызывается каждый раз при срабатывании таймера, меняет координаты робота
+        :return:
+        """
         if self.i >= len(self.pts):
             self.t.stop()
             return
@@ -65,6 +76,10 @@ class Window(QMainWindow):
         self.update()
 
     def somerror(self):
+        """
+        somerror метод, который срабатывает при получении исключения от интерпретатора,
+        создает всплывающее окно с информацией об ошибке
+        """
         poperr = QMessageBox()
         poperr.setWindowTitle("exception raised")
         poperr.setText(str(self.errs))
@@ -72,12 +87,20 @@ class Window(QMainWindow):
         poperr.exec_()
 
     def run(self):
+        """
+        run срабатывает при запуске робота, отправляет путь к текстовому файлу интерпретатору и
+        получает координаты или исключение.
+        если есть готовые координаты, то запускает робота по ним, без обращения к интерпретатору.
+        на каждый запуск по новым координатам записывает изменения в crashlog при исключении или
+        в log, если исключение не срабатывало
+        """
         if not self.pts:
             si = STARTUPINFO()
             si.dwFlags | STARTF_USESHOWWINDOW
             si.wShowWindow = SW_HIDE
             f = Popen([ptm, T.file],
-                      stdin=PIPE, stdout=PIPE, stderr=PIPE, encoding="CP866", startupinfo=si, universal_newlines=True)
+                      stdin=PIPE, stdout=PIPE, stderr=PIPE, encoding="CP866", startupinfo=si,
+                      universal_newlines=True, creationflags=CREATE_NO_WINDOW)
             cords, errs = f.stdout.read(), f.stderr.readline()
             cords = cords.rstrip()
             self.errs = errs
@@ -108,15 +131,24 @@ class Window(QMainWindow):
             self.t.start(100)
 
     def stop(self):
+        """
+        stop останавливает таймер, что останавливавет метод te
+        """
         self.t.stop()
 
     def cont(self):
+        """
+        cont возобнавляет таймер, если робот не достиг своей финальной точки, что запускает метод te
+        """
         if not self.i >= len(self.pts):
             self.t.start(100)
 
 
 class Textui(QMainWindow):
     def __init__(self):
+        """
+        класс окна с текстовым редактором и меню с командами для робота
+        """
         QMainWindow.__init__(self)
         uic.loadUi("textedit.ui", self)
         self.fl = True
@@ -133,9 +165,16 @@ class Textui(QMainWindow):
         self.show()
 
     def change(self):
+        """
+        change срабатывает при изменении текста и меняет флаг на True, что нужно для проверки перед запуском робота
+        """
         self.fl = True
 
     def run(self):
+        """
+        run проверяет текст на изменения, если изменений не было, то запускает робота, если были, то
+        предлагает сохранить файл
+        """
         if not self.fl:
             w.run()
         else:
@@ -148,6 +187,9 @@ class Textui(QMainWindow):
                 self.save()
 
     def save(self):
+        """
+        save сохраняет файл в нынешний или запускает saveas, если файл еще не выбран
+        """
         if self.file:
             with open(self.file, "w", encoding='utf-8') as of:
                 of.write(self.textedit.toPlainText())
@@ -161,6 +203,9 @@ class Textui(QMainWindow):
         w.y = 0
 
     def open(self):
+        """
+        open открывает диалог выбора файла и загружает выбранный файл в окно текстового редактора
+        """
         fod = QFileDialog()
         fod.setFileMode(QFileDialog.AnyFile)
         fod.setWindowTitle("open")
@@ -185,6 +230,9 @@ class Textui(QMainWindow):
 
     def saveas(self):
         fsd = QFileDialog()
+        """
+        saveas открывает окно для выбора файла, в который будет записана нынешняя программа
+        """
         fsd.setFileMode(QFileDialog.AnyFile)
         fsd.setWindowTitle("save as")
         fsd.setNameFilter("text files (*.txt)")
