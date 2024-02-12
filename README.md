@@ -17,3 +17,6 @@
 для удобства можно создать ярлык файла на рабочем столе. Ссылка на архив: {[кликабельный текст](https://drive.google.com/file/d/1V2bumfc-QaoxVG9BybQPtluoM5tNxoZE/view?usp=sharing)}
 
 2 вариант) Скачайте установщик и откройте его, далее следуйте его инструкциям: {ссылка}
+
+## Видеоролик, демонстрирующий функционирование программного продукта
+Ссылка на видео: https://drive.google.com/file/d/1c4Jl3i-fo5SkNIU4SKr3CdWCix13aOeo/view?usp=sharing
