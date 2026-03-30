@@ -363,3 +363,4 @@ MigrationBackup/
 FodyWeavers.xsd
 /src/IDE/.idea
 *.zip
+/.idea
