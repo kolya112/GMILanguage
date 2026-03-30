@@ -1,12 +1,14 @@
-﻿using System.Text;
+﻿using System.IO;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace GMIMachine
+namespace EmeraldMachine
 {
-    public class GMIMachine
+    public class EmeraldMachine
     {
         internal string _executeFilePath;
 
-        public GMIMachine(string executeFilePath)
+        public EmeraldMachine(string executeFilePath)
         {
             _executeFilePath = executeFilePath;
         }

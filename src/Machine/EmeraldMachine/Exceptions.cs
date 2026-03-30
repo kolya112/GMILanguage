@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace GMIMachine
+namespace EmeraldMachine
 {
     // Запускаемый файл не найден
     internal class ExecutableFileNotFoundException : Exception

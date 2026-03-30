@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace GMIMachine.Common
+namespace EmeraldMachine.Common
 {
     internal class Constants
     {

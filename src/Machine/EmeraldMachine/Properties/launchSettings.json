@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "GMIMachine": {
+    "EmeraldMachine": {
       "commandName": "Project",
       "commandLineArgs": "\"C:\\Users\\Gomosapiens\\source\\repos\\GMILanguage\\src\\Machine\\GMICLI\\bin\\Debug\\net7.0\\test.gmi\""
     }

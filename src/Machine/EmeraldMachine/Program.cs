@@ -1,6 +1,7 @@
 ﻿using System;
+using System.Threading.Tasks;
 
-namespace GMIMachine
+namespace EmeraldMachine
 {
     internal class Program
     {
@@ -9,8 +10,8 @@ namespace GMIMachine
             if (args.Length != 1)
                 throw new Exception("Передано неверное количество аргументов");
 
-            // Инициализация конструктора класса GMIMachine
-            var machine = new GMIMachine(args[0]);
+            // Инициализация конструктора класса EmeraldMachine
+            var machine = new EmeraldMachine(args[0]);
             // Запускаем машину-интерпретатор
             await machine.Init();
         }

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace GMIMachine.Common
+namespace EmeraldMachine.Common
 {
     internal class Utils
     {

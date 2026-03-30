@@ -1,6 +1,9 @@
-﻿using System.Text;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
-namespace GMIMachine.Parser
+namespace EmeraldMachine.Parser
 {
     internal class Parser
     {

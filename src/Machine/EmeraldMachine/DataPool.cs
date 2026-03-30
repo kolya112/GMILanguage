@@ -1,6 +1,7 @@
-﻿using System.Numerics;
+﻿using System.Collections.Generic;
+using System.Numerics;
 
-namespace GMIMachine
+namespace EmeraldMachine
 {
     internal class DataPool
     {
